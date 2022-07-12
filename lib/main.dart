@@ -71,16 +71,20 @@ class _HomePageState extends State<HomePage> {
         children: [
           Expanded(
             child: Center(
-              child: SizedBox(
-                width: 0.8 * MediaQuery.of(context).size.width,
-                child: content,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: (0.2 * MediaQuery.of(context).size.width / 2),
+                      vertical: 48),
+                  child: content,
+                ),
               ),
             ),
           ),
           Center(
             child: Container(
               decoration: BoxDecoration(
-                color: Colour.secondary,
+                color: Colour.primaryContainer,
                 borderRadius: const BorderRadius.all(
                   Radius.circular(12),
                 ),

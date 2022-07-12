@@ -5,7 +5,7 @@ class Colour {
   static Color background = const Color(0xFF252e42);
   static Color backgroundContainer = const Color(0xFF2f3b52);
   static Color primary = const Color(0xFFD6B704);
-  static Color primaryContainer = const Color(0xFF968c03);
+  static Color primaryContainer = const Color(0xDDD6B734);
   static Color secondary = const Color(0xFF8AA314);
   static Color secondaryContainer = const Color(0xFF0051b2);
   static Color tertiary = const Color(0xFFfe0049);
