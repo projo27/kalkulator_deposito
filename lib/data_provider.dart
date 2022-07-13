@@ -4,6 +4,31 @@ enum Datetype { dateRange, period }
 
 enum PeriodType { month, year }
 
+class PeriodData {
+  String description;
+  int period;
+  PeriodType type;
+
+  PeriodData({
+    required this.description,
+    required this.period,
+    required this.type,
+  });
+
+  int get dateCount {
+    return period * _dateCountOfPeriodType(type);
+  }
+
+  int _dateCountOfPeriodType(PeriodType type) {
+    switch (type) {
+      case PeriodType.month:
+        return 30;
+      case PeriodType.year:
+        return 365;
+    }
+  }
+}
+
 class ResultData {
   num nominalFund;
   num interest;
@@ -81,11 +106,36 @@ class DateRange {
 class DatePeriod {
   int period;
   PeriodType periodType;
+  String? description;
 
   DatePeriod({
     required this.period,
     required this.periodType,
-  });
+  }) {
+    description = "${period.toString()}  ${periodTypeToString(periodType)}";
+  }
+
+  int get dateCount {
+    return period * _dateCountOfPeriodType(periodType);
+  }
+
+  int _dateCountOfPeriodType(PeriodType type) {
+    switch (type) {
+      case PeriodType.month:
+        return 30;
+      case PeriodType.year:
+        return 365;
+    }
+  }
+
+  String periodTypeToString(PeriodType type) {
+    switch (type) {
+      case PeriodType.month:
+        return 'Bulan';
+      case PeriodType.year:
+        return 'Tahun';
+    }
+  }
 }
 
 class DataProvider extends ChangeNotifier {
@@ -94,6 +144,7 @@ class DataProvider extends ChangeNotifier {
     startDate: DateTime.now(),
     endDate: DateTime.now().add(const Duration(days: 365)),
   );
+
   DatePeriod _datePeriod = DatePeriod(
     period: 1,
     periodType: PeriodType.month,

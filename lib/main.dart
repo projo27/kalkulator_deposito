@@ -145,10 +145,97 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+class PeriodListBox extends StatelessWidget {
+  PeriodListBox({Key? key, this.onIconPressed}) : super(key: key);
+  final Function()? onIconPressed;
+
+  TextEditingController periodCtrl = TextEditingController();
+
+  final List<DatePeriod> _periodData = [
+    DatePeriod(period: 1, periodType: PeriodType.month),
+    DatePeriod(period: 3, periodType: PeriodType.month),
+    DatePeriod(period: 6, periodType: PeriodType.month),
+    DatePeriod(period: 1, periodType: PeriodType.year),
+    DatePeriod(period: 3, periodType: PeriodType.year),
+  ];
+
+  showPeriodList(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SizedBox(
+          height: 300,
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: ListView.builder(
+              itemBuilder: (context, idx) {
+                DataProvider data = context.watch<DataProvider>();
+                return ListTile(
+                  title: Text(
+                    _periodData[idx].description ?? "",
+                    style: Textstyle.body.copyWith(color: Colour.textAccent),
+                  ),
+                  onTap: () {
+                    data.setDatePeriod(
+                      DatePeriod(
+                        period: _periodData[idx].period,
+                        periodType: _periodData[idx].periodType,
+                      ),
+                    );
+                    Navigator.pop(context);
+                  },
+                  selected: data.datePeriod.description ==
+                      _periodData[idx].description,
+                  selectedTileColor: Colour.primary,
+                );
+              },
+              itemCount: _periodData.length,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    DataProvider data = context.read<DataProvider>();
+    periodCtrl.text = data.datePeriod.description ?? "";
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: TextFormField(
+            controller: periodCtrl,
+            textAlign: TextAlign.right,
+            style: Textstyle.bodyBold.copyWith(color: Colour.primary),
+            cursorColor: Colour.primary,
+            decoration: inputDecor('Periode', '1 Tahun'),
+            readOnly: true,
+            onTap: () {
+              showPeriodList(context);
+            },
+            // inputFormatters: [DecimalInputFormatter()],
+          ),
+        ),
+        IconButton(
+          onPressed: onIconPressed,
+          icon: Icon(
+            Icons.date_range_outlined,
+            color: Colour.text,
+          ),
+          color: Colour.text,
+        ),
+      ],
+    );
+  }
+}
+
 class DateRangeBox extends StatelessWidget {
-  const DateRangeBox({
-    Key? key,
-  }) : super(key: key);
+  const DateRangeBox({Key? key, this.onIconPressed}) : super(key: key);
+  final Function()? onIconPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -177,9 +264,9 @@ class DateRangeBox extends StatelessWidget {
         ),
         const SizedBox(width: 5),
         IconButton(
-          onPressed: () {},
+          onPressed: this.onIconPressed,
           icon: Icon(
-            Icons.date_range_outlined,
+            Icons.access_time_rounded,
             color: Colour.text,
           ),
           color: Colour.text,

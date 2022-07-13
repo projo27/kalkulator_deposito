@@ -136,7 +136,6 @@ class _ResultCalculatorState extends State<ResultCalculator> {
                 isClearable: true),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r"[0-9.,]"))
-              //_interestFormatter
             ],
             onChanged: (val) {
               data.resultData = data.resultData.copywith(
@@ -147,7 +146,17 @@ class _ResultCalculatorState extends State<ResultCalculator> {
           ),
         ),
         const SizedBox(height: 12),
-        const DateRangeBox(),
+        data.dateType == Datetype.dateRange
+            ? DateRangeBox(
+                onIconPressed: () {
+                  data.setDateType(Datetype.period);
+                },
+              )
+            : PeriodListBox(
+                onIconPressed: () {
+                  data.setDateType(Datetype.dateRange);
+                },
+              ),
         const SizedBox(height: 12),
         TextFormField(
           controller: _resultNominalCtrl,
