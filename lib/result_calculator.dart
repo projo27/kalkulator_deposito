@@ -1,3 +1,4 @@
+import 'package:fade_shimmer/fade_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kalkulator_deposito/const.dart';
@@ -17,10 +18,9 @@ class ResultCalculator extends StatefulWidget {
 }
 
 class _ResultCalculatorState extends State<ResultCalculator> {
-  late TextEditingController _nominalFundCtrl,
-      _interestCtrl,
-      _resultNominalCtrl,
-      _resultInterestCtrl;
+  late TextEditingController _nominalFundCtrl, _interestCtrl, _taxPercentCtrl;
+
+  bool _loading = true;
 
   CurrencyTextInputFormatter _nominalFundFormatter = CurrencyTextInputFormatter(
           decimalDigits: 0, locale: 'id_ID', symbol: ""),
@@ -44,15 +44,9 @@ class _ResultCalculatorState extends State<ResultCalculator> {
       text: resultData.interest.toString(),
       // text: _interestFormatter.format(resultData.interest.toString()),
     );
-    _resultNominalCtrl = TextEditingController(
-      text: _resultNominalFormatter.format(
-        (resultData.resultNominal ?? 0).toString(),
-      ),
-    );
-    _resultInterestCtrl = TextEditingController(
-      text: _resultInterestFormatter.format(
-        (resultData.resultInterest ?? 0).toString(),
-      ),
+    _taxPercentCtrl = TextEditingController(
+      text: resultData.taxPercent.toString(),
+      // text: _interestFormatter.format(resultData.interest.toString()),
     );
   }
 
@@ -60,8 +54,7 @@ class _ResultCalculatorState extends State<ResultCalculator> {
   void dispose() {
     _nominalFundCtrl.dispose();
     _interestCtrl.dispose();
-    _resultNominalCtrl.dispose();
-    _resultInterestCtrl.dispose();
+    _taxPercentCtrl.dispose();
 
     super.dispose();
   }
@@ -103,8 +96,13 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             textAlign: TextAlign.right,
             style: Textstyle.bodyBold.copyWith(color: Colour.primary),
             cursorColor: Colour.primary,
-            decoration: inputDecor('Modal / Nominal Deposito', '1.000.000',
-                prefix: Text("Rp", style: Textstyle.bodyBold)),
+            decoration: inputDecor(
+              'Modal / Nominal Deposito',
+              '1.000.000',
+              prefix: Text("Rp", style: Textstyle.bodyBold),
+              isClearable: true,
+              controller: _nominalFundCtrl,
+            ),
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
             ],
@@ -112,7 +110,6 @@ class _ResultCalculatorState extends State<ResultCalculator> {
               data.resultData = data.resultData.copywith(
                 nominalFund: num.parse(val),
               );
-              // print(data.resultData.nominalFund);
             },
           ),
         ),
@@ -131,9 +128,13 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             textAlign: TextAlign.right,
             style: Textstyle.bodyBold.copyWith(color: Colour.primary),
             cursorColor: Colour.primary,
-            decoration: inputDecor('Suku Bunga', '5,5 % ',
-                prefix: Text("%", style: Textstyle.bodyBold),
-                isClearable: true),
+            decoration: inputDecor(
+              'Suku Bunga',
+              '5,5 % ',
+              prefix: Text("%", style: Textstyle.bodyBold),
+              isClearable: true,
+              controller: _interestCtrl,
+            ),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r"[0-9.,]"))
             ],
@@ -141,7 +142,35 @@ class _ResultCalculatorState extends State<ResultCalculator> {
               data.resultData = data.resultData.copywith(
                 interest: num.tryParse(val),
               );
-              // print(data.resultData.interest);
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        Focus(
+          onFocusChange: (isTrue) {
+            if (isTrue) {
+              _interestCtrl.text = data.resultData.interest.toString();
+            } else {
+              _interestCtrl.text = data.resultData.interest.toString();
+            }
+          },
+          child: TextFormField(
+            controller: _taxPercentCtrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            textAlign: TextAlign.right,
+            style: Textstyle.bodyBold.copyWith(color: Colour.primary),
+            cursorColor: Colour.primary,
+            decoration: inputDecor('Pajak', '20 % ',
+                prefix: Text("%", style: Textstyle.bodyBold),
+                isClearable: true,
+                controller: _taxPercentCtrl),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r"[0-9.,]"))
+            ],
+            onChanged: (val) {
+              data.resultData = data.resultData.copywith(
+                taxPercent: num.tryParse(val),
+              );
             },
           ),
         ),
@@ -157,55 +186,25 @@ class _ResultCalculatorState extends State<ResultCalculator> {
                   data.setDateType(Datetype.dateRange);
                 },
               ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _resultNominalCtrl,
-          keyboardType: TextInputType.number,
-          textAlign: TextAlign.right,
-          style: Textstyle.bodyBold.copyWith(color: Colour.primary),
-          cursorColor: Colour.primary,
-          decoration: inputDecor('Nominal Jatuh Tempo', '1.000.000',
-              prefix: Text("Rp", style: Textstyle.bodyBold)),
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            _resultNominalFormatter
-          ],
-          onChanged: (val) {
-            data.resultData = data.resultData.copywith(
-              resultNominal: _resultNominalFormatter.getUnformattedValue(),
-            );
-            print(data.resultData.resultNominal);
-          },
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _resultInterestCtrl,
-          keyboardType: TextInputType.number,
-          textAlign: TextAlign.right,
-          style: Textstyle.bodyBold.copyWith(color: Colour.primary),
-          cursorColor: Colour.primary,
-          decoration: inputDecor(
-            'Total Akumulasi Bunga',
-            '',
-            prefix: Text("Rp", style: Textstyle.bodyBold),
+        const SizedBox(height: 24),
+        Card(
+          elevation: 4,
+          color: Colour.text,
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.all(12),
+            child: _loading ? const LoaderShimmer() : const Result(),
           ),
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            _resultInterestFormatter
-          ],
-          onChanged: (val) {
-            data.resultData = data.resultData.copywith(
-              resultInterest: _resultInterestFormatter.getUnformattedValue(),
-            );
-            print(data.resultData.resultInterest);
-          },
         ),
-        Text(data.resultData.nominalFund.toString()),
         const SizedBox(height: 40),
         SizedBox(
           height: 60,
           child: ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () {
+              setState(() {
+                _loading = !_loading;
+              });
+            },
             icon: Icon(
               Icons.calculate,
               color: Colour.textAccent,
@@ -224,6 +223,90 @@ class _ResultCalculatorState extends State<ResultCalculator> {
           ),
         ),
         const SizedBox(height: 42)
+      ],
+    );
+  }
+}
+
+class Result extends StatelessWidget {
+  const Result({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Nominal Saat Jatuh Tempo",
+          style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
+        ),
+        Text(
+          "Total Akumulasi Bunga",
+          style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
+        ),
+        const Divider(),
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.info_outline,
+                size: 24,
+              ),
+              color: Colour.backgroundContainer,
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.share,
+                size: 24,
+              ),
+              color: Colour.backgroundContainer,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class LoaderShimmer extends StatelessWidget {
+  const LoaderShimmer({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        FadeShimmer(
+          height: 32,
+          width: MediaQuery.of(context).size.width,
+          radius: 4,
+          highlightColor: Colour.text,
+          baseColor: Colors.white24,
+          millisecondsDelay: 10,
+        ),
+        const SizedBox(height: 12),
+        FadeShimmer(
+          height: 32,
+          width: MediaQuery.of(context).size.width,
+          radius: 4,
+          highlightColor: Colour.text,
+          baseColor: Colors.white24,
+          millisecondsDelay: 110,
+        ),
+        const SizedBox(height: 12),
+        FadeShimmer(
+          height: 32,
+          width: MediaQuery.of(context).size.width,
+          radius: 4,
+          highlightColor: Colour.text,
+          baseColor: Colors.white24,
+          millisecondsDelay: 210,
+        ),
       ],
     );
   }

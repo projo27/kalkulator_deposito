@@ -28,6 +28,13 @@ class Textstyle {
       fontSize: 32,
     ),
   );
+  static TextStyle subtitle = GoogleFonts.lato(
+    textStyle: TextStyle(
+      color: Colour.text,
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+    ),
+  );
 }
 
 enum ThePage { result, nominal }
@@ -63,14 +70,11 @@ InputDecoration inputDecor(
     prefix: prefix,
     suffixIcon: isClearable == true
         ? InkWell(
-            onTap: (controller != null)
-                ? () {
-                    controller.clear();
-                  }
-                : null,
+            onTap: (controller != null) ? () => controller.clear() : null,
             child: Icon(
               Icons.cancel_rounded,
               color: Colour.text,
+              size: 18,
             ),
           )
         : null,

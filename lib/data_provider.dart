@@ -33,55 +33,70 @@ class ResultData {
   num nominalFund;
   num interest;
   Datetype dateType;
+  num taxPercent;
   num? resultNominal;
   num? resultInterest;
+  num? resultTax;
 
-  ResultData({
-    required this.nominalFund,
+  ResultData(
+      {required this.nominalFund,
+      required this.interest,
+      required this.dateType,
+      required this.taxPercent,
+      this.resultNominal,
+      this.resultInterest,
+      this.resultTax});
+
+  copywith({
+    num? nominalFund,
+    num? interest,
+    Datetype? dateType,
+    num? taxPercent,
+    num? resultNominal,
+    num? resultInterest,
+    num? resultTax,
+  }) {
+    return ResultData(
+      nominalFund: nominalFund ?? this.nominalFund,
+      interest: interest ?? this.interest,
+      dateType: dateType ?? this.dateType,
+      taxPercent: taxPercent ?? this.taxPercent,
+      resultNominal: resultNominal ?? this.resultNominal,
+      resultInterest: resultInterest ?? this.resultInterest,
+      resultTax: resultTax ?? this.resultTax,
+    );
+  }
+}
+
+class NominalData {
+  num resultInterest;
+  num interest;
+  Datetype dateType;
+  num taxPercent;
+  num? nominalFund;
+  num? resultNominal;
+  num? resultTax;
+
+  NominalData({
+    required this.resultInterest,
     required this.interest,
     required this.dateType,
+    required this.taxPercent,
+    this.nominalFund,
     this.resultNominal,
-    this.resultInterest,
+    this.resultTax,
   });
 
   copywith({
     num? nominalFund,
     num? interest,
     Datetype? dateType,
+    num? taxPercent,
     num? resultNominal,
     num? resultInterest,
-  }) {
-    return ResultData(
-      nominalFund: nominalFund ?? this.nominalFund,
-      interest: interest ?? this.interest,
-      dateType: dateType ?? this.dateType,
-      resultNominal: resultNominal ?? this.resultNominal,
-      resultInterest: resultInterest ?? this.resultInterest,
-    );
-  }
-}
-
-class NominalData {
-  double resultInterest;
-  double interest;
-  Datetype dateType;
-  double? nominalFund;
-  double? resultNominal;
-
-  NominalData({
-    required this.resultInterest,
-    required this.resultNominal,
-    required this.interest,
-    required this.dateType,
-    this.nominalFund,
-  });
-
-  copywith({
-    double? nominalFund,
-    double? interest,
-    Datetype? dateType,
-    double? resultNominal,
-    double? resultInterest,
+    // num? nominalFund,
+    // num? resultNominal,
+    // num? resultTax,
   }) {
     return NominalData(
       nominalFund: nominalFund ?? this.nominalFund,
@@ -89,6 +104,7 @@ class NominalData {
       dateType: dateType ?? this.dateType,
       resultNominal: resultNominal ?? this.resultNominal,
       resultInterest: resultInterest ?? this.resultInterest,
+      taxPercent: taxPercent ?? this.taxPercent,
     );
   }
 }
@@ -154,8 +170,7 @@ class DataProvider extends ChangeNotifier {
     nominalFund: 1000000000,
     interest: 5.50,
     dateType: Datetype.dateRange,
-    resultNominal: null,
-    resultInterest: null,
+    taxPercent: 20,
   );
 
   NominalData _nominalData = NominalData(
@@ -163,7 +178,7 @@ class DataProvider extends ChangeNotifier {
     resultNominal: null,
     interest: 0,
     dateType: Datetype.dateRange,
-    nominalFund: null,
+    taxPercent: 20,
   );
 
   ResultData get resultData => _resultData;

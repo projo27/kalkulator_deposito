@@ -155,7 +155,9 @@ class PeriodListBox extends StatelessWidget {
     DatePeriod(period: 1, periodType: PeriodType.month),
     DatePeriod(period: 3, periodType: PeriodType.month),
     DatePeriod(period: 6, periodType: PeriodType.month),
+    DatePeriod(period: 9, periodType: PeriodType.month),
     DatePeriod(period: 1, periodType: PeriodType.year),
+    DatePeriod(period: 2, periodType: PeriodType.year),
     DatePeriod(period: 3, periodType: PeriodType.year),
   ];
 
@@ -170,10 +172,14 @@ class PeriodListBox extends StatelessWidget {
             child: ListView.builder(
               itemBuilder: (context, idx) {
                 DataProvider data = context.watch<DataProvider>();
+                bool selected =
+                    data.datePeriod.description == _periodData[idx].description;
                 return ListTile(
                   title: Text(
                     _periodData[idx].description ?? "",
-                    style: Textstyle.body.copyWith(color: Colour.textAccent),
+                    style: Textstyle.body.copyWith(
+                      color: selected ? Colors.white : Colour.textAccent,
+                    ),
                   ),
                   onTap: () {
                     data.setDatePeriod(
@@ -184,9 +190,8 @@ class PeriodListBox extends StatelessWidget {
                     );
                     Navigator.pop(context);
                   },
-                  selected: data.datePeriod.description ==
-                      _periodData[idx].description,
-                  selectedTileColor: Colour.primary,
+                  selected: selected,
+                  selectedTileColor: Colour.primaryContainer,
                 );
               },
               itemCount: _periodData.length,
