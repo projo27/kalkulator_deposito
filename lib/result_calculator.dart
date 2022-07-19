@@ -20,8 +20,6 @@ class ResultCalculator extends StatefulWidget {
 class _ResultCalculatorState extends State<ResultCalculator> {
   late TextEditingController _nominalFundCtrl, _interestCtrl, _taxPercentCtrl;
 
-  bool _loading = true;
-
   CurrencyTextInputFormatter _nominalFundFormatter = CurrencyTextInputFormatter(
           decimalDigits: 0, locale: 'id_ID', symbol: ""),
       _interestFormatter = CurrencyTextInputFormatter(
@@ -193,36 +191,10 @@ class _ResultCalculatorState extends State<ResultCalculator> {
           child: Container(
             width: MediaQuery.of(context).size.width,
             padding: const EdgeInsets.all(12),
-            child: _loading ? const LoaderShimmer() : const Result(),
+            child: data.isLoading ? const LoaderShimmer() : const Result(),
           ),
         ),
-        const SizedBox(height: 40),
-        SizedBox(
-          height: 60,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              setState(() {
-                _loading = !_loading;
-              });
-            },
-            icon: Icon(
-              Icons.calculate,
-              color: Colour.textAccent,
-            ),
-            label: Text(
-              "HITUNG",
-              style: Textstyle.bodyBold.copyWith(color: Colour.textAccent),
-            ),
-            style: ElevatedButton.styleFrom(
-              primary: Colour.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.all(12),
-            ),
-          ),
-        ),
-        const SizedBox(height: 42)
+        const SizedBox(height: 40)
       ],
     );
   }
@@ -234,15 +206,56 @@ class Result extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           "Nominal Saat Jatuh Tempo",
           style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
         ),
+        const SizedBox(height: 8),
+        Card(
+          color: Colour.backgroundContainer,
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              top: 4,
+              right: 8,
+              left: 8,
+              bottom: 6,
+            ),
+            child: Text(
+              "1.000.000.000",
+              style: Textstyle.title.copyWith(
+                color: Colour.primary,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         Text(
           "Total Akumulasi Bunga",
           style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          color: Colour.backgroundContainer,
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              top: 4,
+              right: 8,
+              left: 8,
+              bottom: 6,
+            ),
+            child: Text(
+              "1.000.000.000",
+              style: Textstyle.title2.copyWith(
+                color: Colour.primary,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
         ),
         const Divider(),
         Row(
@@ -287,7 +300,7 @@ class LoaderShimmer extends StatelessWidget {
           radius: 4,
           highlightColor: Colour.text,
           baseColor: Colors.white24,
-          millisecondsDelay: 10,
+          millisecondsDelay: 0,
         ),
         const SizedBox(height: 12),
         FadeShimmer(
@@ -296,7 +309,7 @@ class LoaderShimmer extends StatelessWidget {
           radius: 4,
           highlightColor: Colour.text,
           baseColor: Colors.white24,
-          millisecondsDelay: 110,
+          millisecondsDelay: 50,
         ),
         const SizedBox(height: 12),
         FadeShimmer(
@@ -305,7 +318,7 @@ class LoaderShimmer extends StatelessWidget {
           radius: 4,
           highlightColor: Colour.text,
           baseColor: Colors.white24,
-          millisecondsDelay: 210,
+          millisecondsDelay: 100,
         ),
       ],
     );

@@ -62,84 +62,138 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    DataProvider data = context.watch<DataProvider>();
     return Scaffold(
       backgroundColor: Colour.background,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          Expanded(
-            child: Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: (0.2 * MediaQuery.of(context).size.width / 2),
-                      vertical: 48),
-                  child: content,
+      body: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        child: Stack(
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height - 60,
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal:
+                            (0.2 * MediaQuery.of(context).size.width / 2),
+                        vertical: 48),
+                    child: content,
+                  ),
                 ),
               ),
             ),
-          ),
-          Center(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colour.primaryContainer,
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(12),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colour.background.withOpacity(0),
+                      Colour.backgroundContainer
+                    ],
+                  ),
                 ),
-              ),
-              margin: const EdgeInsets.all(20),
-              height: 60,
-              width: 0.8 * MediaQuery.of(context).size.width,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: _page == ThePage.result
-                        ? null
-                        : () {
-                            setPage(ThePage.result);
-                          },
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Icon(Icons.money),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                        primary: Colour.backgroundContainer,
-                        onSurface: Colour.background,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                // color: LinearGradient(colors: [Colour.primary, Colour.secondary]),
+                height: 120,
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colour.text,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(12),
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 12)),
-                    // color: Colour.background,
-                  ),
-                  // const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: _page == ThePage.nominal
-                        ? null
-                        : () {
-                            setPage(ThePage.nominal);
-                          },
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Icon(Icons.attach_money),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      primary: Colour.backgroundContainer,
-                      onSurface: Colour.background,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        margin: const EdgeInsets.all(20),
+                        width: 0.8 * MediaQuery.of(context).size.width,
+                        height: 72,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: _page == ThePage.result
+                                  ? null
+                                  : () {
+                                      setPage(ThePage.result);
+                                    },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: Icon(Icons.money),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                  primary: Colour.backgroundContainer,
+                                  onSurface: Colour.background,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12)),
+                              // color: Colour.background,
+                            ),
+                            const SizedBox(width: 64),
+                            ElevatedButton(
+                              onPressed: _page == ThePage.nominal
+                                  ? null
+                                  : () {
+                                      setPage(ThePage.nominal);
+                                    },
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: Icon(Icons.attach_money),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                primary: Colour.backgroundContainer,
+                                onSurface: Colour.background,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                              // color: Colour.primary,
+                            ),
+                          ],
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    // color: Colour.primary,
-                  ),
-                ],
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        height: 60,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            data.isLoading = !data.isLoading;
+                          },
+                          icon: Icon(
+                            Icons.calculate,
+                            color: Colour.textAccent,
+                          ),
+                          label: Text(
+                            "HITUNG",
+                            style: Textstyle.bodyBold
+                                .copyWith(color: Colour.textAccent),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            primary: Colour.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.all(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }
@@ -151,15 +205,7 @@ class PeriodListBox extends StatelessWidget {
 
   TextEditingController periodCtrl = TextEditingController();
 
-  final List<DatePeriod> _periodData = [
-    DatePeriod(period: 1, periodType: PeriodType.month),
-    DatePeriod(period: 3, periodType: PeriodType.month),
-    DatePeriod(period: 6, periodType: PeriodType.month),
-    DatePeriod(period: 9, periodType: PeriodType.month),
-    DatePeriod(period: 1, periodType: PeriodType.year),
-    DatePeriod(period: 2, periodType: PeriodType.year),
-    DatePeriod(period: 3, periodType: PeriodType.year),
-  ];
+  final List<DatePeriod> _periodData = periodData;
 
   showPeriodList(BuildContext context) {
     showModalBottomSheet(

@@ -154,7 +154,18 @@ class DatePeriod {
   }
 }
 
+final List<DatePeriod> periodData = [
+  DatePeriod(period: 1, periodType: PeriodType.month),
+  DatePeriod(period: 3, periodType: PeriodType.month),
+  DatePeriod(period: 6, periodType: PeriodType.month),
+  DatePeriod(period: 9, periodType: PeriodType.month),
+  DatePeriod(period: 1, periodType: PeriodType.year),
+  DatePeriod(period: 2, periodType: PeriodType.year),
+  DatePeriod(period: 3, periodType: PeriodType.year),
+];
+
 class DataProvider extends ChangeNotifier {
+  bool _isLoading = false;
   Datetype _dateType = Datetype.dateRange;
   DateRange _dateRange = DateRange(
     startDate: DateTime.now(),
@@ -186,6 +197,12 @@ class DataProvider extends ChangeNotifier {
   Datetype get dateType => _dateType;
   DateRange get dateRange => _dateRange;
   DatePeriod get datePeriod => _datePeriod;
+  bool get isLoading => _isLoading;
+
+  set isLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
 
   void setDateType(Datetype dateType) {
     _dateType = dateType;
@@ -202,7 +219,7 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void set resultData(data) {
+  set resultData(data) {
     _resultData = data;
     notifyListeners();
   }
@@ -210,5 +227,28 @@ class DataProvider extends ChangeNotifier {
   void setNominalData(NominalData data) {
     _nominalData = data;
     notifyListeners();
+  }
+
+  num calculateInterestPerAnual() {
+    return _resultData.interest / _datePeriod.dateCount;
+  }
+
+  void calculateResultData() {
+    _isLoading = true;
+    notifyListeners();
+    Future.delayed(const Duration(seconds: 1), () {
+      // _resultData = _resultData.copywith(
+      //   resultNominal: _nominalData.nominalFund! *
+      //       (_resultData.interest / 100) *
+      //       _dateCountOfPeriodType(_datePeriod.periodType),
+      //   resultInterest: _resultData.nominalFund *
+      //       (_resultData.interest / 100) *
+      //       _dateCountOfPeriodType(_datePeriod.periodType),
+      //   resultTax: _resultData.resultInterest! *
+      //       (_resultData.taxPercent / 100),
+      // );
+      _isLoading = false;
+      notifyListeners();
+    });
   }
 }

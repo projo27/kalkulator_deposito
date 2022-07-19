@@ -28,6 +28,13 @@ class Textstyle {
       fontSize: 32,
     ),
   );
+  static TextStyle title2 = GoogleFonts.lato(
+    textStyle: TextStyle(
+      color: Colour.text,
+      fontWeight: FontWeight.bold,
+      fontSize: 24,
+    ),
+  );
   static TextStyle subtitle = GoogleFonts.lato(
     textStyle: TextStyle(
       color: Colour.text,
