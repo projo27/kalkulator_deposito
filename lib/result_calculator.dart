@@ -5,6 +5,7 @@ import 'package:kalkulator_deposito/const.dart';
 import 'package:kalkulator_deposito/data_provider.dart';
 import 'package:kalkulator_deposito/main.dart';
 import 'package:kalkulator_deposito/util/currency_text_input_formatter.dart';
+import 'package:kalkulator_deposito/util/number_conversion.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 
@@ -205,6 +206,7 @@ class Result extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    DataProvider data = context.read<DataProvider>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -224,7 +226,7 @@ class Result extends StatelessWidget {
               bottom: 6,
             ),
             child: Text(
-              "1.000.000.000",
+              NumberConversion.toCurrency(data.resultData.resultNominal ?? 0),
               style: Textstyle.title.copyWith(
                 color: Colour.primary,
               ),
@@ -249,7 +251,32 @@ class Result extends StatelessWidget {
               bottom: 6,
             ),
             child: Text(
-              "1.000.000.000",
+              NumberConversion.toCurrency(data.resultData.resultInterest ?? 0),
+              style: Textstyle.title2.copyWith(
+                color: Colour.primary,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          "Total Pajak",
+          style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
+        ),
+        const SizedBox(height: 8),
+        Card(
+          color: Colour.backgroundContainer,
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              top: 4,
+              right: 8,
+              left: 8,
+              bottom: 6,
+            ),
+            child: Text(
+              NumberConversion.toCurrency(data.resultData.resultTax ?? 0),
               style: Textstyle.title2.copyWith(
                 color: Colour.primary,
               ),

@@ -167,7 +167,7 @@ class _HomePageState extends State<HomePage> {
                         height: 60,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            data.isLoading = !data.isLoading;
+                            data.calculateData();
                           },
                           icon: Icon(
                             Icons.calculate,

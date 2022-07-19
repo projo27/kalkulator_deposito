@@ -233,20 +233,21 @@ class DataProvider extends ChangeNotifier {
     return _resultData.interest / _datePeriod.dateCount;
   }
 
-  void calculateResultData() {
+  void calculateData() {
     _isLoading = true;
     notifyListeners();
-    Future.delayed(const Duration(seconds: 1), () {
-      // _resultData = _resultData.copywith(
-      //   resultNominal: _nominalData.nominalFund! *
-      //       (_resultData.interest / 100) *
-      //       _dateCountOfPeriodType(_datePeriod.periodType),
-      //   resultInterest: _resultData.nominalFund *
-      //       (_resultData.interest / 100) *
-      //       _dateCountOfPeriodType(_datePeriod.periodType),
-      //   resultTax: _resultData.resultInterest! *
-      //       (_resultData.taxPercent / 100),
-      // );
+    Future.delayed(const Duration(seconds: 3), () {
+      num resultInterest = _resultData.nominalFund *
+          (_resultData.interest / 100) *
+          (_datePeriod.dateCount / 365);
+      num resultTax = resultInterest * _resultData.taxPercent / 100;
+      num resultNominal = _resultData.nominalFund + resultInterest - resultTax;
+
+      _resultData = _resultData.copywith(
+        resultInterest: resultInterest,
+        resultNominal: resultNominal,
+        resultTax: resultTax,
+      );
       _isLoading = false;
       notifyListeners();
     });
