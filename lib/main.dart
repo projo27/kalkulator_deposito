@@ -121,9 +121,13 @@ class _HomePageState extends State<HomePage> {
                                   : () {
                                       setPage(ThePage.result);
                                     },
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8.0),
-                                child: Icon(Icons.money),
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Icon(
+                                  Icons.money,
+                                  color: Colour.text,
+                                ),
                               ),
                               style: ElevatedButton.styleFrom(
                                   primary: Colour.backgroundContainer,
@@ -142,9 +146,13 @@ class _HomePageState extends State<HomePage> {
                                   : () {
                                       setPage(ThePage.nominal);
                                     },
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8.0),
-                                child: Icon(Icons.attach_money),
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Icon(
+                                  Icons.attach_money,
+                                  color: Colour.text,
+                                ),
                               ),
                               style: ElevatedButton.styleFrom(
                                 primary: Colour.backgroundContainer,
@@ -171,12 +179,12 @@ class _HomePageState extends State<HomePage> {
                           },
                           icon: Icon(
                             Icons.calculate,
-                            color: Colour.textAccent,
+                            color: Colour.backgroundContainer,
                           ),
                           label: Text(
                             "HITUNG",
                             style: Textstyle.bodyBold
-                                .copyWith(color: Colour.textAccent),
+                                .copyWith(color: Colour.backgroundContainer),
                           ),
                           style: ElevatedButton.styleFrom(
                             primary: Colour.primary,

@@ -11,4 +11,8 @@ class NumberConversion {
       decimalDigits: decimalDigit,
     ).format(value);
   }
+
+  static round(num value) {
+    return value.round();
+  }
 }

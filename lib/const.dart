@@ -17,6 +17,7 @@ class Textstyle {
   static TextStyle body = GoogleFonts.lato(
     textStyle: TextStyle(color: Colour.text),
   );
+  static TextStyle bodySmall = body.copyWith(fontSize: 12);
   static TextStyle bodyBold = GoogleFonts.lato(
     textStyle: TextStyle(color: Colour.text, fontWeight: FontWeight.bold),
   );

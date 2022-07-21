@@ -1,3 +1,6 @@
+import 'dart:math';
+import 'dart:ui';
+
 import 'package:fade_shimmer/fade_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -192,7 +195,7 @@ class _ResultCalculatorState extends State<ResultCalculator> {
           child: Container(
             width: MediaQuery.of(context).size.width,
             padding: const EdgeInsets.all(12),
-            child: data.isLoading ? const LoaderShimmer() : const Result(),
+            child: data.isLoading ? const LoaderShimmer() : Result(),
           ),
         ),
         const SizedBox(height: 40)
@@ -202,7 +205,130 @@ class _ResultCalculatorState extends State<ResultCalculator> {
 }
 
 class Result extends StatelessWidget {
-  const Result({Key? key}) : super(key: key);
+  Result({Key? key}) : super(key: key);
+  final TextStyle _textStyleBody = Textstyle.bodyBold.copyWith(
+    color: Colour.background,
+  );
+  final TextStyle _textStyleBodySmall =
+      Textstyle.bodySmall.copyWith(color: Colour.background, fontSize: 14);
+
+  showInfo(BuildContext context, ResultData data, DatePeriod datePeriod) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        actionsPadding: EdgeInsets.all(8),
+        backgroundColor: Colors.grey[300],
+        title: Text(
+          'Rincian Hasil Deposito',
+          style: Textstyle.subtitle.copyWith(color: Colour.background),
+        ),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                DetilItem(
+                  label: "Pokok / Modal (A)",
+                  value: NumberConversion.toCurrency(data.nominalFund),
+                ),
+                DetilItem(
+                  label: "Suku Bunga (B)",
+                  value: data.interest.toString() + " %",
+                ),
+                DetilItem(
+                  label: "Pajak (C)",
+                  value: data.taxPercent.toString() + " %",
+                ),
+                DetilItem(
+                  label: "Jumlah Hari (D)",
+                  value: datePeriod.dateCount.toString() + " Hari",
+                ),
+                DetilItem(
+                  label: "Jumlah Hari Setahun (E)",
+                  value: "365 Hari",
+                ),
+                SizedBox(
+                  height: 24,
+                  child: Divider(
+                    thickness: 3,
+                    color: Colour.background,
+                  ),
+                ),
+                DetilItem(
+                  label: "Profit Bunga (X = A x B x (D / E))",
+                  formula:
+                      "${NumberConversion.toCurrency(data.nominalFund)} x ${data.interest} % x ( ${datePeriod.dateCount} hari x  365 hari) =",
+                  value: "${NumberConversion.toCurrency(data.resultInterest!)}",
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Total Pajak (Y = (X x C))",
+                  formula:
+                      "${NumberConversion.toCurrency(data.resultInterest!)} x ${data.taxPercent} % = ",
+                  value: "${NumberConversion.toCurrency(data.resultTax!)}",
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Hasil Deposito (Z = (X - Y))",
+                  formula:
+                      "${NumberConversion.toCurrency(data.resultInterest!)} - ${NumberConversion.toCurrency(data.resultTax!)} = ",
+                  value:
+                      "${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)}",
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Nominal Total (Return = (A + Z))",
+                  formula:
+                      "${NumberConversion.toCurrency(data.nominalFund)} + ${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)} = ",
+                  value: "${NumberConversion.toCurrency(data.resultNominal!)}",
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Asumsi Jumlah Hari Sebulan (P)",
+                  value: "30 Hari",
+                ),
+                DetilItem(
+                  label: "Profit Bunga per Bulan ",
+                  desc: " (Q = (A x B x (100% - C) x (P / E)) ",
+                  formula:
+                      "${NumberConversion.toCurrency(data.nominalFund)} x ${data.interest}% x (100% - ${data.taxPercent}%) x (30 hari / 365 hari) =",
+                  value:
+                      "${NumberConversion.toCurrency((data.nominalFund * (data.interest / 100) * ((100 - data.taxPercent) / 100)) * (30 / 365))}",
+                  valueColor: Colour.primary,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton.icon(
+            icon: Icon(
+              Icons.share,
+              color: Colour.background,
+            ),
+            label: Text(
+              'SHARE',
+              style: _textStyleBody,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          TextButton.icon(
+            icon: Icon(
+              Icons.thumb_up,
+              color: Colour.background,
+            ),
+            label: Text(
+              'OK',
+              style: _textStyleBody,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -215,23 +341,10 @@ class Result extends StatelessWidget {
           style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
         ),
         const SizedBox(height: 8),
-        Card(
-          color: Colour.backgroundContainer,
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 4,
-              right: 8,
-              left: 8,
-              bottom: 6,
-            ),
-            child: Text(
-              NumberConversion.toCurrency(data.resultData.resultNominal ?? 0),
-              style: Textstyle.title.copyWith(
-                color: Colour.primary,
-              ),
-              textAlign: TextAlign.right,
-            ),
+        ResultText(
+          value: data.resultData.resultNominal ?? 0,
+          style: Textstyle.title.copyWith(
+            color: Colour.primary,
           ),
         ),
         const SizedBox(height: 16),
@@ -240,23 +353,10 @@ class Result extends StatelessWidget {
           style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
         ),
         const SizedBox(height: 8),
-        Card(
-          color: Colour.backgroundContainer,
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 4,
-              right: 8,
-              left: 8,
-              bottom: 6,
-            ),
-            child: Text(
-              NumberConversion.toCurrency(data.resultData.resultInterest ?? 0),
-              style: Textstyle.title2.copyWith(
-                color: Colour.primary,
-              ),
-              textAlign: TextAlign.right,
-            ),
+        ResultText(
+          value: data.resultData.resultInterest ?? 0,
+          style: Textstyle.title2.copyWith(
+            color: Colour.primary,
           ),
         ),
         const SizedBox(height: 16),
@@ -265,23 +365,10 @@ class Result extends StatelessWidget {
           style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
         ),
         const SizedBox(height: 8),
-        Card(
-          color: Colour.backgroundContainer,
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 4,
-              right: 8,
-              left: 8,
-              bottom: 6,
-            ),
-            child: Text(
-              NumberConversion.toCurrency(data.resultData.resultTax ?? 0),
-              style: Textstyle.title2.copyWith(
-                color: Colour.primary,
-              ),
-              textAlign: TextAlign.right,
-            ),
+        ResultText(
+          value: data.resultData.resultTax ?? 0,
+          style: Textstyle.title2.copyWith(
+            color: Colour.primary,
           ),
         ),
         const Divider(),
@@ -290,7 +377,9 @@ class Result extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                showInfo(context, data.resultData, data.datePeriod);
+              },
               icon: const Icon(
                 Icons.info_outline,
                 size: 24,
@@ -308,6 +397,67 @@ class Result extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class ResultText extends StatelessWidget {
+  const ResultText({
+    Key? key,
+    required this.value,
+    this.style,
+  }) : super(key: key);
+
+  final num value;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Colour.backgroundContainer,
+      elevation: 4,
+      child: InkWell(
+        onTap: () {
+          Clipboard.setData(
+            ClipboardData(
+              text: value.toString(),
+            ),
+          );
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Text coppied to clipboard",
+                style: Textstyle.bodySmall.copyWith(color: Colour.text),
+              ),
+              backgroundColor: Colour.background.withOpacity(0.7),
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(
+            top: 4,
+            right: 8,
+            left: 8,
+            bottom: 6,
+          ),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                NumberConversion.toCurrency(value),
+                style: style ??
+                    Textstyle.title2.copyWith(
+                      color: Colour.primary,
+                    ),
+                textAlign: TextAlign.right,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -347,6 +497,85 @@ class LoaderShimmer extends StatelessWidget {
           baseColor: Colors.white24,
           millisecondsDelay: 100,
         ),
+      ],
+    );
+  }
+}
+
+class DetilItem extends StatelessWidget {
+  DetilItem({
+    Key? key,
+    required this.label,
+    required this.value,
+    this.desc,
+    this.formula,
+    this.valueColor,
+  }) : super(key: key);
+
+  final String label;
+  final String? desc;
+  final String? formula;
+  final String value;
+  final Color? valueColor;
+  final TextStyle _textStyleBody = Textstyle.bodyBold.copyWith(
+    color: Colour.background,
+  );
+  final TextStyle _textStyleBodySmall =
+      Textstyle.bodySmall.copyWith(color: Colour.background, fontSize: 14);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: _textStyleBodySmall.copyWith(color: Colors.grey[600])),
+        if (desc != null)
+          Text(desc!,
+              style: _textStyleBodySmall.copyWith(color: Colors.grey[600])),
+        if (formula != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  formula!,
+                  style: _textStyleBodySmall.copyWith(
+                      fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+            ),
+          ),
+        Card(
+          color: valueColor ?? Colour.text,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: _textStyleBody,
+                  textAlign: TextAlign.right,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(
+          height: 8,
+        )
+        // Divider(
+        //   thickness: 0.5,
+        //   color: Colors.grey[400],
+        //   // indent: MediaQuery.of(context).size.width,
+        //   // indent: MediaQuery.of(context).size.width *
+        //   //     (Random().nextDouble() * (0.6 - 0.1) + 0.1),
+        // ),
       ],
     );
   }
