@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:kalkulator_deposito/const.dart';
 import 'package:kalkulator_deposito/data_provider.dart';
 import 'package:kalkulator_deposito/nominal_calculator.dart';
@@ -20,6 +21,13 @@ class Apps extends StatelessWidget {
         ChangeNotifierProvider<DataProvider>(create: (_) => DataProvider())
       ],
       builder: (context, child) => MaterialApp(
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+        ],
+        supportedLocales: [
+          const Locale('id', 'ID'),
+        ],
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(primaryColor: Colour.primary),
         home: const HomePage(),
       ),
@@ -199,7 +207,15 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-            )
+            ),
+            Positioned(
+              right: 18,
+              top: 18,
+              child: Icon(
+                Icons.feedback,
+                color: Colour.text,
+              ),
+            ),
           ],
         ),
       ),
@@ -293,32 +309,76 @@ class PeriodListBox extends StatelessWidget {
 }
 
 class DateRangeBox extends StatelessWidget {
-  const DateRangeBox({Key? key, this.onIconPressed}) : super(key: key);
+  DateRangeBox({Key? key, this.onIconPressed}) : super(key: key);
   final Function()? onIconPressed;
+
+  TextEditingController dateStartCtrl = TextEditingController(),
+      dateEndCtrl = TextEditingController();
+
+  void _showDateRangePicker(BuildContext context, DataProvider data) {
+    showDateRangePicker(
+      context: context,
+      firstDate: data.dateRange.startDate,
+      lastDate: data.dateRange.endDate,
+      locale: const Locale("id", "ID"),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: Colour.background,
+            colorScheme: ColorScheme.light(primary: Colour.background),
+            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+          ),
+          child: child!,
+        );
+      },
+    ).then((value) {
+      if (value != null) {
+        data.dateRange.startDate = value.start;
+        data.dateRange.endDate = value.end;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    DataProvider data = context.watch<DataProvider>();
+    dateStartCtrl.text = DateFormat("dd/MM/yyy").format(
+      data.dateRange.startDate,
+    );
+    dateEndCtrl.text = DateFormat("dd/MM/yyy").format(
+      data.dateRange.endDate,
+    );
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
           child: TextFormField(
+            controller: dateStartCtrl,
             textAlign: TextAlign.right,
             style: Textstyle.bodyBold.copyWith(color: Colour.primary),
             cursorColor: Colour.primary,
             decoration: inputDecor('Awal Pendanaan', '31/08/2022'),
+            readOnly: true,
+            onTap: () {
+              _showDateRangePicker(context, data);
+            },
             // inputFormatters: [DecimalInputFormatter()],
           ),
         ),
         const SizedBox(width: 5),
         Expanded(
           child: TextFormField(
+            controller: dateEndCtrl,
             textAlign: TextAlign.right,
             style: Textstyle.bodyBold.copyWith(color: Colour.primary),
             cursorColor: Colour.primary,
             decoration: inputDecor('Akhir Pendanaan', '31/08/2023'),
-            // inputFormatters: [DecimalInputFormatter()],
+            readOnly: true,
+            onTap: () {
+              _showDateRangePicker(context, data);
+            },
           ),
         ),
         const SizedBox(width: 5),

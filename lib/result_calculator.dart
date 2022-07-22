@@ -212,7 +212,7 @@ class Result extends StatelessWidget {
   final TextStyle _textStyleBodySmall =
       Textstyle.bodySmall.copyWith(color: Colour.background, fontSize: 14);
 
-  showInfo(BuildContext context, ResultData data, DatePeriod datePeriod) {
+  showInfo(BuildContext context, ResultData data, DateRepository dateRepo) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -243,23 +243,23 @@ class Result extends StatelessWidget {
                 ),
                 DetilItem(
                   label: "Jumlah Hari (D)",
-                  value: datePeriod.dateCount.toString() + " Hari",
+                  value: dateRepo.dateCount.toString() + " Hari",
                 ),
                 DetilItem(
                   label: "Jumlah Hari Setahun (E)",
                   value: "365 Hari",
                 ),
-                SizedBox(
-                  height: 24,
-                  child: Divider(
-                    thickness: 3,
-                    color: Colour.background,
-                  ),
-                ),
+                // SizedBox(
+                //   height: 24,
+                //   child: Divider(
+                //     thickness: 3,
+                //     color: Colour.background,
+                //   ),
+                // ),
                 DetilItem(
                   label: "Profit Bunga (X = A x B x (D / E))",
                   formula:
-                      "${NumberConversion.toCurrency(data.nominalFund)} x ${data.interest} % x ( ${datePeriod.dateCount} hari x  365 hari) =",
+                      "${NumberConversion.toCurrency(data.nominalFund)} x ${data.interest} % x ( ${dateRepo.dateCount} hari x  365 hari) =",
                   value: "${NumberConversion.toCurrency(data.resultInterest!)}",
                   valueColor: Colour.primary,
                 ),
@@ -307,22 +307,18 @@ class Result extends StatelessWidget {
             icon: Icon(
               Icons.share,
               color: Colour.background,
+              size: 16,
             ),
-            label: Text(
-              'SHARE',
-              style: _textStyleBody,
-            ),
+            label: Text('SHARE', style: _textStyleBody),
             onPressed: () => Navigator.pop(context),
           ),
           TextButton.icon(
             icon: Icon(
               Icons.thumb_up,
               color: Colour.background,
+              size: 16,
             ),
-            label: Text(
-              'OK',
-              style: _textStyleBody,
-            ),
+            label: Text('OK', style: _textStyleBody),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -378,7 +374,13 @@ class Result extends StatelessWidget {
           children: [
             IconButton(
               onPressed: () {
-                showInfo(context, data.resultData, data.datePeriod);
+                showInfo(
+                  context,
+                  data.resultData,
+                  data.dateType == Datetype.period
+                      ? data.datePeriod
+                      : data.dateRange,
+                );
               },
               icon: const Icon(
                 Icons.info_outline,

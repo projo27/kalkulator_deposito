@@ -109,7 +109,11 @@ class NominalData {
   }
 }
 
-class DateRange {
+abstract class DateRepository {
+  int get dateCount;
+}
+
+class DateRange extends DateRepository {
   DateTime startDate;
   DateTime endDate;
 
@@ -117,9 +121,14 @@ class DateRange {
     required this.startDate,
     required this.endDate,
   });
+
+  @override
+  int get dateCount {
+    return endDate.difference(startDate).inDays;
+  }
 }
 
-class DatePeriod {
+class DatePeriod extends DateRepository {
   int period;
   PeriodType periodType;
   String? description;
@@ -131,6 +140,7 @@ class DatePeriod {
     description = "${period.toString()}  ${periodTypeToString(periodType)}";
   }
 
+  @override
   int get dateCount {
     return period * _dateCountOfPeriodType(periodType);
   }
