@@ -4,10 +4,11 @@ class NumberConversion {
   static toCurrency(
     num value, {
     int decimalDigit = 0,
+    String symbol = 'Rp ',
   }) {
     return NumberFormat.currency(
       locale: 'id',
-      symbol: 'Rp ',
+      symbol: symbol,
       decimalDigits: decimalDigit,
     ).format(value);
   }

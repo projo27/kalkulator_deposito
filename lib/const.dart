@@ -45,14 +45,12 @@ class Textstyle {
   );
 }
 
-enum ThePage { result, nominal }
-
 InputDecoration inputDecor(
   String labelText,
   String hintText, {
   Widget? prefix,
-  TextEditingController? controller,
   bool isClearable = false,
+  Function()? onClear,
   bool isFilled = false,
 }) {
   return InputDecoration(
@@ -78,7 +76,7 @@ InputDecoration inputDecor(
     prefix: prefix,
     suffixIcon: isClearable == true
         ? InkWell(
-            onTap: (controller != null) ? () => controller.clear() : null,
+            onTap: onClear,
             child: Icon(
               Icons.cancel_rounded,
               color: Colour.text,

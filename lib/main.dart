@@ -1,9 +1,15 @@
+// ignore_for_file: must_be_immutable
+
+import 'package:fade_shimmer/fade_shimmer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:kalkulator_deposito/const.dart';
 import 'package:kalkulator_deposito/data_provider.dart';
 import 'package:kalkulator_deposito/nominal_calculator.dart';
 import 'package:kalkulator_deposito/result_calculator.dart';
+import 'package:kalkulator_deposito/util/number_conversion.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -21,11 +27,11 @@ class Apps extends StatelessWidget {
         ChangeNotifierProvider<DataProvider>(create: (_) => DataProvider())
       ],
       builder: (context, child) => MaterialApp(
-        localizationsDelegates: [
+        localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
         ],
-        supportedLocales: [
-          const Locale('id', 'ID'),
+        supportedLocales: const [
+          Locale('id', 'ID'),
         ],
         debugShowCheckedModeBanner: false,
         theme: ThemeData(primaryColor: Colour.primary),
@@ -315,33 +321,35 @@ class DateRangeBox extends StatelessWidget {
   TextEditingController dateStartCtrl = TextEditingController(),
       dateEndCtrl = TextEditingController();
 
-  void _showDateRangePicker(BuildContext context, DataProvider data) {
-    showDateRangePicker(
+  Future<DateTimeRange?> _showDateRangePicker(BuildContext context) async {
+    DataProvider data = context.read<DataProvider>();
+    return await showDateRangePicker(
       context: context,
-      firstDate: data.dateRange.startDate,
-      lastDate: data.dateRange.endDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 365 * 50)),
+      lastDate: DateTime.now().add(const Duration(days: 50 * 365)),
+      initialDateRange: DateTimeRange(
+        start: data.dateRange.startDate,
+        end: data.dateRange.endDate,
+      ),
       locale: const Locale("id", "ID"),
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
             primaryColor: Colour.background,
             colorScheme: ColorScheme.light(primary: Colour.background),
-            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+            buttonTheme:
+                const ButtonThemeData(textTheme: ButtonTextTheme.primary),
           ),
           child: child!,
         );
       },
-    ).then((value) {
-      if (value != null) {
-        data.dateRange.startDate = value.start;
-        data.dateRange.endDate = value.end;
-      }
-    });
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     DataProvider data = context.watch<DataProvider>();
+
     dateStartCtrl.text = DateFormat("dd/MM/yyy").format(
       data.dateRange.startDate,
     );
@@ -361,8 +369,13 @@ class DateRangeBox extends StatelessWidget {
             cursorColor: Colour.primary,
             decoration: inputDecor('Awal Pendanaan', '31/08/2022'),
             readOnly: true,
-            onTap: () {
-              _showDateRangePicker(context, data);
+            onTap: () async {
+              DateTimeRange? dtr = await _showDateRangePicker(context);
+              if (dtr != null) {
+                data.setDateRange(
+                  DateRange(startDate: dtr.start, endDate: dtr.end),
+                );
+              }
             },
             // inputFormatters: [DecimalInputFormatter()],
           ),
@@ -376,20 +389,205 @@ class DateRangeBox extends StatelessWidget {
             cursorColor: Colour.primary,
             decoration: inputDecor('Akhir Pendanaan', '31/08/2023'),
             readOnly: true,
-            onTap: () {
-              _showDateRangePicker(context, data);
+            onTap: () async {
+              DateTimeRange? dtr = await _showDateRangePicker(context);
+              if (dtr != null) {
+                data.setDateRange(
+                  DateRange(startDate: dtr.start, endDate: dtr.end),
+                );
+              }
             },
           ),
         ),
         const SizedBox(width: 5),
         IconButton(
-          onPressed: this.onIconPressed,
+          onPressed: onIconPressed,
           icon: Icon(
             Icons.access_time_rounded,
             color: Colour.text,
           ),
           color: Colour.text,
         ),
+      ],
+    );
+  }
+}
+
+class LoaderShimmer extends StatelessWidget {
+  const LoaderShimmer({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        FadeShimmer(
+          height: 32,
+          width: MediaQuery.of(context).size.width,
+          radius: 4,
+          highlightColor: Colour.text,
+          baseColor: Colors.white24,
+          millisecondsDelay: 0,
+        ),
+        const SizedBox(height: 12),
+        FadeShimmer(
+          height: 32,
+          width: MediaQuery.of(context).size.width,
+          radius: 4,
+          highlightColor: Colour.text,
+          baseColor: Colors.white24,
+          millisecondsDelay: 50,
+        ),
+        const SizedBox(height: 12),
+        FadeShimmer(
+          height: 32,
+          width: MediaQuery.of(context).size.width,
+          radius: 4,
+          highlightColor: Colour.text,
+          baseColor: Colors.white24,
+          millisecondsDelay: 100,
+        ),
+      ],
+    );
+  }
+}
+
+class ResultText extends StatelessWidget {
+  const ResultText({
+    Key? key,
+    required this.value,
+    this.style,
+  }) : super(key: key);
+
+  final num value;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Colour.backgroundContainer,
+      elevation: 4,
+      child: InkWell(
+        onTap: () {
+          Clipboard.setData(
+            ClipboardData(
+              text: value.toString(),
+            ),
+          );
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Text coppied to clipboard",
+                style: Textstyle.bodySmall.copyWith(color: Colour.text),
+              ),
+              backgroundColor: Colour.background.withOpacity(0.7),
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.only(
+            top: 4,
+            right: 8,
+            left: 8,
+            bottom: 6,
+          ),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                NumberConversion.toCurrency(value),
+                style: style ??
+                    Textstyle.title2.copyWith(
+                      color: Colour.primary,
+                    ),
+                textAlign: TextAlign.right,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class DetilItem extends StatelessWidget {
+  DetilItem({
+    Key? key,
+    required this.label,
+    required this.value,
+    this.desc,
+    this.formula,
+    this.valueColor,
+  }) : super(key: key);
+
+  final String label;
+  final String? desc;
+  final String? formula;
+  final String value;
+  final Color? valueColor;
+  final TextStyle _textStyleBody = Textstyle.bodyBold.copyWith(
+    color: Colour.background,
+  );
+  final TextStyle _textStyleBodySmall =
+      Textstyle.bodySmall.copyWith(color: Colour.background, fontSize: 14);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: _textStyleBodySmall.copyWith(color: Colors.grey[600])),
+        if (desc != null)
+          Text(desc!,
+              style: _textStyleBodySmall.copyWith(color: Colors.grey[600])),
+        if (formula != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  formula!,
+                  style: _textStyleBodySmall.copyWith(
+                      fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+            ),
+          ),
+        Card(
+          color: valueColor ?? Colour.text,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: _textStyleBody,
+                  textAlign: TextAlign.right,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(
+          height: 8,
+        )
+        // Divider(
+        //   thickness: 0.5,
+        //   color: Colors.grey[400],
+        //   // indent: MediaQuery.of(context).size.width,
+        //   // indent: MediaQuery.of(context).size.width *
+        //   //     (Random().nextDouble() * (0.6 - 0.1) + 0.1),
+        // ),
       ],
     );
   }

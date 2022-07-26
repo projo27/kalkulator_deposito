@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+enum ThePage { result, nominal }
+
 enum Datetype { dateRange, period }
 
 enum PeriodType { month, year }
@@ -69,42 +71,41 @@ class ResultData {
 }
 
 class NominalData {
-  num resultInterest;
+  num resultPerMonth;
   num interest;
   Datetype dateType;
   num taxPercent;
-  num? nominalFund;
   num? resultNominal;
+  num? resultInterest;
   num? resultTax;
 
   NominalData({
-    required this.resultInterest,
+    required this.resultPerMonth,
     required this.interest,
     required this.dateType,
     required this.taxPercent,
-    this.nominalFund,
     this.resultNominal,
+    this.resultInterest,
     this.resultTax,
   });
 
   copywith({
-    num? nominalFund,
+    num? resultPerMonth,
     num? interest,
     Datetype? dateType,
     num? taxPercent,
     num? resultNominal,
     num? resultInterest,
-    // num? nominalFund,
-    // num? resultNominal,
-    // num? resultTax,
+    num? resultTax,
   }) {
     return NominalData(
-      nominalFund: nominalFund ?? this.nominalFund,
+      resultPerMonth: resultPerMonth ?? this.resultPerMonth,
       interest: interest ?? this.interest,
       dateType: dateType ?? this.dateType,
+      taxPercent: taxPercent ?? this.taxPercent,
       resultNominal: resultNominal ?? this.resultNominal,
       resultInterest: resultInterest ?? this.resultInterest,
-      taxPercent: taxPercent ?? this.taxPercent,
+      resultTax: resultTax ?? this.resultTax,
     );
   }
 }
@@ -195,11 +196,11 @@ class DataProvider extends ChangeNotifier {
   );
 
   NominalData _nominalData = NominalData(
-    resultInterest: 0,
-    resultNominal: null,
-    interest: 0,
+    resultPerMonth: 3000000,
+    interest: 5.50,
     dateType: Datetype.dateRange,
     taxPercent: 20,
+    resultNominal: null,
   );
 
   ResultData get resultData => _resultData;
@@ -234,7 +235,7 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setNominalData(NominalData data) {
+  set nominalData(NominalData data) {
     _nominalData = data;
     notifyListeners();
   }

@@ -1,7 +1,3 @@
-import 'dart:math';
-import 'dart:ui';
-
-import 'package:fade_shimmer/fade_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kalkulator_deposito/const.dart';
@@ -9,7 +5,6 @@ import 'package:kalkulator_deposito/data_provider.dart';
 import 'package:kalkulator_deposito/main.dart';
 import 'package:kalkulator_deposito/util/currency_text_input_formatter.dart';
 import 'package:kalkulator_deposito/util/number_conversion.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 class ResultCalculator extends StatefulWidget {
@@ -24,14 +19,8 @@ class ResultCalculator extends StatefulWidget {
 class _ResultCalculatorState extends State<ResultCalculator> {
   late TextEditingController _nominalFundCtrl, _interestCtrl, _taxPercentCtrl;
 
-  CurrencyTextInputFormatter _nominalFundFormatter = CurrencyTextInputFormatter(
-          decimalDigits: 0, locale: 'id_ID', symbol: ""),
-      _interestFormatter = CurrencyTextInputFormatter(
-          decimalDigits: 2, locale: 'id_ID', symbol: ""),
-      _resultNominalFormatter = CurrencyTextInputFormatter(
-          decimalDigits: 0, locale: 'id_ID', symbol: ""),
-      _resultInterestFormatter = CurrencyTextInputFormatter(
-          decimalDigits: 2, locale: 'id_ID', symbol: "");
+  final CurrencyTextInputFormatter _nominalFundFormatter =
+      CurrencyTextInputFormatter(decimalDigits: 0, locale: 'id_ID', symbol: "");
 
   @override
   void initState() {
@@ -103,7 +92,12 @@ class _ResultCalculatorState extends State<ResultCalculator> {
               '1.000.000',
               prefix: Text("Rp", style: Textstyle.bodyBold),
               isClearable: true,
-              controller: _nominalFundCtrl,
+              onClear: () {
+                _nominalFundCtrl.clear();
+                data.resultData = data.resultData.copywith(
+                  nominalFund: null,
+                );
+              },
             ),
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
@@ -135,7 +129,12 @@ class _ResultCalculatorState extends State<ResultCalculator> {
               '5,5 % ',
               prefix: Text("%", style: Textstyle.bodyBold),
               isClearable: true,
-              controller: _interestCtrl,
+              onClear: () {
+                _interestCtrl.clear();
+                data.resultData = data.resultData.copywith(
+                  interest: null,
+                );
+              },
             ),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r"[0-9.,]"))
@@ -162,10 +161,18 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             textAlign: TextAlign.right,
             style: Textstyle.bodyBold.copyWith(color: Colour.primary),
             cursorColor: Colour.primary,
-            decoration: inputDecor('Pajak', '20 % ',
-                prefix: Text("%", style: Textstyle.bodyBold),
-                isClearable: true,
-                controller: _taxPercentCtrl),
+            decoration: inputDecor(
+              'Pajak',
+              '20 % ',
+              prefix: Text("%", style: Textstyle.bodyBold),
+              isClearable: true,
+              onClear: () {
+                _taxPercentCtrl.clear();
+                data.resultData = data.resultData.copywith(
+                  taxPercent: null,
+                );
+              },
+            ),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r"[0-9.,]"))
             ],
@@ -216,7 +223,7 @@ class Result extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        actionsPadding: EdgeInsets.all(8),
+        actionsPadding: const EdgeInsets.all(8),
         backgroundColor: Colors.grey[300],
         title: Text(
           'Rincian Hasil Deposito',
@@ -290,7 +297,7 @@ class Result extends StatelessWidget {
                   value: "30 Hari",
                 ),
                 DetilItem(
-                  label: "Profit Bunga per Bulan ",
+                  label: "Profit Bunga Deposito per Bulan ",
                   desc: " (Q = (A x B x (100% - C) x (P / E)) ",
                   formula:
                       "${NumberConversion.toCurrency(data.nominalFund)} x ${data.interest}% x (100% - ${data.taxPercent}%) x (30 hari / 365 hari) =",
@@ -402,188 +409,3 @@ class Result extends StatelessWidget {
     );
   }
 }
-
-class ResultText extends StatelessWidget {
-  const ResultText({
-    Key? key,
-    required this.value,
-    this.style,
-  }) : super(key: key);
-
-  final num value;
-  final TextStyle? style;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colour.backgroundContainer,
-      elevation: 4,
-      child: InkWell(
-        onTap: () {
-          Clipboard.setData(
-            ClipboardData(
-              text: value.toString(),
-            ),
-          );
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Text coppied to clipboard",
-                style: Textstyle.bodySmall.copyWith(color: Colour.text),
-              ),
-              backgroundColor: Colour.background.withOpacity(0.7),
-              duration: const Duration(seconds: 1),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.only(
-            top: 4,
-            right: 8,
-            left: 8,
-            bottom: 6,
-          ),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                NumberConversion.toCurrency(value),
-                style: style ??
-                    Textstyle.title2.copyWith(
-                      color: Colour.primary,
-                    ),
-                textAlign: TextAlign.right,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class LoaderShimmer extends StatelessWidget {
-  const LoaderShimmer({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FadeShimmer(
-          height: 32,
-          width: MediaQuery.of(context).size.width,
-          radius: 4,
-          highlightColor: Colour.text,
-          baseColor: Colors.white24,
-          millisecondsDelay: 0,
-        ),
-        const SizedBox(height: 12),
-        FadeShimmer(
-          height: 32,
-          width: MediaQuery.of(context).size.width,
-          radius: 4,
-          highlightColor: Colour.text,
-          baseColor: Colors.white24,
-          millisecondsDelay: 50,
-        ),
-        const SizedBox(height: 12),
-        FadeShimmer(
-          height: 32,
-          width: MediaQuery.of(context).size.width,
-          radius: 4,
-          highlightColor: Colour.text,
-          baseColor: Colors.white24,
-          millisecondsDelay: 100,
-        ),
-      ],
-    );
-  }
-}
-
-class DetilItem extends StatelessWidget {
-  DetilItem({
-    Key? key,
-    required this.label,
-    required this.value,
-    this.desc,
-    this.formula,
-    this.valueColor,
-  }) : super(key: key);
-
-  final String label;
-  final String? desc;
-  final String? formula;
-  final String value;
-  final Color? valueColor;
-  final TextStyle _textStyleBody = Textstyle.bodyBold.copyWith(
-    color: Colour.background,
-  );
-  final TextStyle _textStyleBodySmall =
-      Textstyle.bodySmall.copyWith(color: Colour.background, fontSize: 14);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: _textStyleBodySmall.copyWith(color: Colors.grey[600])),
-        if (desc != null)
-          Text(desc!,
-              style: _textStyleBodySmall.copyWith(color: Colors.grey[600])),
-        if (formula != null)
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  formula!,
-                  style: _textStyleBodySmall.copyWith(
-                      fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-              ),
-            ),
-          ),
-        Card(
-          color: valueColor ?? Colour.text,
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  value,
-                  style: _textStyleBody,
-                  textAlign: TextAlign.right,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(
-          height: 8,
-        )
-        // Divider(
-        //   thickness: 0.5,
-        //   color: Colors.grey[400],
-        //   // indent: MediaQuery.of(context).size.width,
-        //   // indent: MediaQuery.of(context).size.width *
-        //   //     (Random().nextDouble() * (0.6 - 0.1) + 0.1),
-        // ),
-      ],
-    );
-  }
-}
-
-var thousandFormatter = MaskTextInputFormatter(
-  mask: '###.###.###',
-  filter: {'#': RegExp(r'[0-9]')},
-);
