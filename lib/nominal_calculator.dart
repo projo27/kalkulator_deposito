@@ -231,7 +231,7 @@ class Result extends StatelessWidget {
               children: [
                 DetilItem(
                   label: "Pokok / Modal (A)",
-                  value: NumberConversion.toCurrency(data.nominalFund),
+                  value: NumberConversion.toCurrency(data.nominalFund!),
                 ),
                 DetilItem(
                   label: "Suku Bunga (B)",
@@ -259,7 +259,7 @@ class Result extends StatelessWidget {
                 DetilItem(
                   label: "Profit Bunga (X = A x B x (D / E))",
                   formula:
-                      "${NumberConversion.toCurrency(data.nominalFund)} x ${data.interest} % x ( ${dateRepo.dateCount} hari x  365 hari) =",
+                      "${NumberConversion.toCurrency(data.nominalFund!)} x ${data.interest} % x ( ${dateRepo.dateCount} hari x  365 hari) =",
                   value: "${NumberConversion.toCurrency(data.resultInterest!)}",
                   valueColor: Colour.primary,
                 ),
@@ -281,7 +281,7 @@ class Result extends StatelessWidget {
                 DetilItem(
                   label: "Nominal Total (Return = (A + Z))",
                   formula:
-                      "${NumberConversion.toCurrency(data.nominalFund)} + ${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)} = ",
+                      "${NumberConversion.toCurrency(data.nominalFund!)} + ${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)} = ",
                   value: "${NumberConversion.toCurrency(data.resultNominal!)}",
                   valueColor: Colour.primary,
                 ),
@@ -293,9 +293,9 @@ class Result extends StatelessWidget {
                   label: "Profit Bunga Deposito per Bulan ",
                   desc: " (Q = (A x B x (100% - C) x (P / E)) ",
                   formula:
-                      "${NumberConversion.toCurrency(data.nominalFund)} x ${data.interest}% x (100% - ${data.taxPercent}%) x (30 hari / 365 hari) =",
+                      "${NumberConversion.toCurrency(data.nominalFund!)} x ${data.interest}% x (100% - ${data.taxPercent}%) x (30 hari / 365 hari) =",
                   value:
-                      "${NumberConversion.toCurrency((data.nominalFund * (data.interest / 100) * ((100 - data.taxPercent) / 100)) * (30 / 365))}",
+                      "${NumberConversion.toCurrency((data.nominalFund! * (data.interest / 100) * ((100 - data.taxPercent) / 100)) * (30 / 365))}",
                   valueColor: Colour.primary,
                 ),
               ],

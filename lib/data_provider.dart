@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kalkulator_deposito/nominal_calculator.dart';
+import 'package:kalkulator_deposito/util/number_conversion.dart';
 
 enum ThePage { result, nominal }
 
@@ -31,41 +33,70 @@ class PeriodData {
   }
 }
 
-class ResultData {
-  num nominalFund;
-  num interest;
-  Datetype dateType;
-  num taxPercent;
-  num? resultNominal;
-  num? resultInterest;
-  num? resultTax;
+abstract class DepositoData {
+  final num interest = 5.5; // persentase bunga deposito
+  final num taxPercent = 20; // persentase pajak
+  final Datetype dateType = Datetype.period;
+  final DateRepository dateData =
+      DatePeriod(period: 3, periodType: PeriodType.month);
+  late final num? nominalFund; // modal deposito
+  late final num? profitInterestPerMonth; // profit bunga dalam sebulan
+  late final num? profitInterestTotal; // profit bunga total
+  late final num? taxTotal; // pajak total
+  late final num? profitNetto; // profit netto profitInterestTotal - taxTotal
+  late final num? profitNominalTotal; // nominalFund + profitNetto
 
-  ResultData(
-      {required this.nominalFund,
-      required this.interest,
-      required this.dateType,
-      required this.taxPercent,
-      this.resultNominal,
-      this.resultInterest,
-      this.resultTax});
+  String get profitInterestTotalFormula {
+    return "${NumberConversion.toCurrency(nominalFund!)} x $interest % x (${dateData.dateCount} hari / ${dateData.annualDateCount} hari) =";
+  }
 
-  copywith({
+  String get taxTotalFormula {
+    return "${NumberConversion.toCurrency(profitInterestTotal!)} x $taxPercent % = ";
+  }
+
+  String get profitNettoFormula {
+    return "${NumberConversion.toCurrency(profitInterestTotal!)} - ${NumberConversion.toCurrency(taxTotal!)} = ";
+  }
+
+  String get profitNominalTotalFormula {
+    return "${NumberConversion.toCurrency(nominalFund!)} + ${NumberConversion.toCurrency(profitNetto!)} = ";
+  }
+
+  String get profitIntersetPerMonthFormula {
+    return "${NumberConversion.toCurrency(nominalFund!)} x $interest % x (100% - $taxPercent %) x (${dateData.monthDateCount} hari / ${dateData.annualDateCount} hari) =";
+  }
+}
+
+class ResultData extends DepositoData {
+  ResultData({
+    required num nominalFund,
+    required num interest,
+    required num taxPercent,
+    required Datetype dateType,
+    required DateRepository dateData,
+    num? profitInterestPerMonth,
+    num? profitInterestTotal,
+    num? taxTotal,
+    num? profitNetto,
+    num? profitNominalTotal,
+  }) : super();
+
+  ResultData copywith({
     num? nominalFund,
     num? interest,
     Datetype? dateType,
+    DateRepository? dateData,
     num? taxPercent,
     num? resultNominal,
     num? resultInterest,
     num? resultTax,
   }) {
     return ResultData(
-      nominalFund: nominalFund ?? this.nominalFund,
+      nominalFund: nominalFund ?? this.nominalFund!,
       interest: interest ?? this.interest,
       dateType: dateType ?? this.dateType,
+      dateData: dateData ?? this.dateData,
       taxPercent: taxPercent ?? this.taxPercent,
-      resultNominal: resultNominal ?? this.resultNominal,
-      resultInterest: resultInterest ?? this.resultInterest,
-      resultTax: resultTax ?? this.resultTax,
     );
   }
 }
@@ -89,7 +120,7 @@ class NominalData {
     this.resultTax,
   });
 
-  copywith({
+  NominalData copywith({
     num? resultPerMonth,
     num? interest,
     Datetype? dateType,
@@ -112,6 +143,8 @@ class NominalData {
 
 abstract class DateRepository {
   int get dateCount;
+  int annualDateCount = 365;
+  int monthDateCount = 30;
 }
 
 class DateRange extends DateRepository {
@@ -138,7 +171,7 @@ class DatePeriod extends DateRepository {
     required this.period,
     required this.periodType,
   }) {
-    description = "${period.toString()}  ${periodTypeToString(periodType)}";
+    description = "$period  ${periodTypeToString(periodType)}";
   }
 
   @override
@@ -248,19 +281,26 @@ class DataProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     Future.delayed(const Duration(seconds: 3), () {
-      num resultInterest = _resultData.nominalFund *
-          (_resultData.interest / 100) *
-          (_datePeriod.dateCount / 365);
-      num resultTax = resultInterest * _resultData.taxPercent / 100;
-      num resultNominal = _resultData.nominalFund + resultInterest - resultTax;
-
-      _resultData = _resultData.copywith(
-        resultInterest: resultInterest,
-        resultNominal: resultNominal,
-        resultTax: resultTax,
-      );
+      calculateResultData();
+      calculateResultNominal();
       _isLoading = false;
       notifyListeners();
     });
   }
+
+  void calculateResultData() {
+    num resultInterest = _resultData.nominalFund! *
+        (_resultData.interest / 100) *
+        (_datePeriod.dateCount / 365);
+    num resultTax = resultInterest * _resultData.taxPercent / 100;
+    num resultNominal = _resultData.nominalFund! + resultInterest - resultTax;
+
+    _resultData = _resultData.copywith(
+      resultInterest: resultInterest,
+      resultNominal: resultNominal,
+      resultTax: resultTax,
+    );
+  }
+
+  void calculateResultNominal() {}
 }

@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 
 class NumberConversion {
-  static toCurrency(
+  static String toCurrency(
     num value, {
     int decimalDigit = 0,
     String symbol = 'Rp ',
@@ -15,5 +15,9 @@ class NumberConversion {
 
   static round(num value) {
     return value.round();
+  }
+
+  static String decimal(num value) {
+    return NumberFormat.percentPattern('id').format(value);
   }
 }
