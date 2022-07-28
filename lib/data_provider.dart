@@ -34,19 +34,36 @@ class PeriodData {
 }
 
 abstract class DepositoData {
-  final num interest = 5.5; // persentase bunga deposito
-  final num taxPercent = 20; // persentase pajak
-  final Datetype dateType = Datetype.period;
-  final DateRepository dateData =
-      DatePeriod(period: 3, periodType: PeriodType.month);
-  late final num? nominalFund; // modal deposito
-  late final num? profitInterestPerMonth; // profit bunga dalam sebulan
-  late final num? profitInterestTotal; // profit bunga total
-  late final num? taxTotal; // pajak total
-  late final num? profitNetto; // profit netto profitInterestTotal - taxTotal
-  late final num? profitNominalTotal; // nominalFund + profitNetto
+  /// persentase bunga deposito
+  num interest = 5.5;
+  num taxPercent = 20;
 
-  String get profitInterestTotalFormula {
+  /// date type
+  Datetype dateType = Datetype.period;
+  DateRepository dateData = DatePeriod(
+    period: 3,
+    periodType: PeriodType.month,
+  );
+
+  /// modal deposito / rp yang didepositokan
+  num? nominalFund;
+
+  /// profit bunga dalam sebulan
+  num? profitInterestPerMonth;
+
+  /// profit bunga total
+  num? profitInterestTotal;
+
+  /// pajak total
+  num? taxTotal;
+
+  /// profit netto : profitInterestTotal - taxTotal
+  num? profitNetto;
+
+  /// nominalFund + profitNetto
+  num? profitNominalTotal;
+
+  String profitInterestTotalFormula(DateRepository dateData) {
     return "${NumberConversion.toCurrency(nominalFund!)} x $interest % x (${dateData.dateCount} hari / ${dateData.annualDateCount} hari) =";
   }
 
@@ -62,8 +79,8 @@ abstract class DepositoData {
     return "${NumberConversion.toCurrency(nominalFund!)} + ${NumberConversion.toCurrency(profitNetto!)} = ";
   }
 
-  String get profitIntersetPerMonthFormula {
-    return "${NumberConversion.toCurrency(nominalFund!)} x $interest % x (100% - $taxPercent %) x (${dateData.monthDateCount} hari / ${dateData.annualDateCount} hari) =";
+  String profitIntersetPerMonthFormula(DateRepository dateData) {
+    return "(${dateData.monthDateCount} hari / ${dateData.annualDateCount} hari) x ${NumberConversion.toCurrency(profitNetto!)} =";
   }
 }
 
@@ -79,17 +96,30 @@ class ResultData extends DepositoData {
     num? taxTotal,
     num? profitNetto,
     num? profitNominalTotal,
-  }) : super();
+  }) {
+    this.nominalFund = nominalFund;
+    this.interest = interest;
+    this.taxPercent = taxPercent;
+    this.dateType = dateType;
+    this.dateData = dateData;
+    this.profitInterestPerMonth = profitInterestPerMonth;
+    this.profitInterestTotal = profitInterestTotal;
+    this.taxTotal = taxTotal;
+    this.profitNetto = profitNetto;
+    this.profitNominalTotal = profitNominalTotal;
+  }
 
   ResultData copywith({
     num? nominalFund,
     num? interest,
+    num? taxPercent,
     Datetype? dateType,
     DateRepository? dateData,
-    num? taxPercent,
-    num? resultNominal,
-    num? resultInterest,
-    num? resultTax,
+    num? profitInterestPerMonth,
+    num? profitInterestTotal,
+    num? taxTotal,
+    num? profitNetto,
+    num? profitNominalTotal,
   }) {
     return ResultData(
       nominalFund: nominalFund ?? this.nominalFund!,
@@ -97,6 +127,12 @@ class ResultData extends DepositoData {
       dateType: dateType ?? this.dateType,
       dateData: dateData ?? this.dateData,
       taxPercent: taxPercent ?? this.taxPercent,
+      profitInterestPerMonth:
+          profitInterestPerMonth ?? this.profitInterestPerMonth,
+      profitInterestTotal: profitInterestTotal ?? this.profitInterestTotal,
+      taxTotal: taxTotal ?? this.taxTotal,
+      profitNetto: profitNetto ?? this.profitNetto,
+      profitNominalTotal: profitNominalTotal ?? this.profitNominalTotal,
     );
   }
 }
@@ -224,7 +260,8 @@ class DataProvider extends ChangeNotifier {
   ResultData _resultData = ResultData(
     nominalFund: 1000000000,
     interest: 5.50,
-    dateType: Datetype.dateRange,
+    dateType: Datetype.period,
+    dateData: DatePeriod(period: 3, periodType: PeriodType.month),
     taxPercent: 20,
   );
 
@@ -248,7 +285,8 @@ class DataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setDateType(Datetype dateType) {
+  void setDateType(Datetype dateType, {DepositoData? data = null}) {
+    if (data != null) data.dateType = dateType;
     _dateType = dateType;
     notifyListeners();
   }
@@ -289,16 +327,24 @@ class DataProvider extends ChangeNotifier {
   }
 
   void calculateResultData() {
-    num resultInterest = _resultData.nominalFund! *
+    DateRepository dateR =
+        dateType == Datetype.period ? _datePeriod : _dateRange;
+    num profitInterestTotal = _resultData.nominalFund! *
         (_resultData.interest / 100) *
-        (_datePeriod.dateCount / 365);
-    num resultTax = resultInterest * _resultData.taxPercent / 100;
-    num resultNominal = _resultData.nominalFund! + resultInterest - resultTax;
+        (dateR.dateCount / 365);
+    num taxTotal = profitInterestTotal * _resultData.taxPercent / 100;
+    num profitNetto = profitInterestTotal - taxTotal;
+    num profitNominalTotal = _resultData.nominalFund! + profitNetto;
+    num profitInterestPerMonth =
+        dateR.monthDateCount / dateR.annualDateCount * profitNetto;
+    // ${NumberConversion.toCurrency(nominalFund!)} x $interest % x (100% - $taxPercent %) x (${dateData.monthDateCount} hari / ${dateData.annualDateCount} hari)
 
     _resultData = _resultData.copywith(
-      resultInterest: resultInterest,
-      resultNominal: resultNominal,
-      resultTax: resultTax,
+      profitInterestTotal: profitInterestTotal,
+      profitNominalTotal: profitNominalTotal,
+      profitInterestPerMonth: profitInterestPerMonth,
+      profitNetto: profitNetto,
+      taxTotal: taxTotal,
     );
   }
 

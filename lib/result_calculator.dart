@@ -265,31 +265,27 @@ class Result extends StatelessWidget {
                 // ),
                 DetilItem(
                   label: "Profit Bunga (X = A x B x (D / E))",
-                  formula:
-                      "${NumberConversion.toCurrency(data.nominalFund!)} x ${data.interest} % x ( ${dateRepo.dateCount} hari x  365 hari) =",
-                  value: "${NumberConversion.toCurrency(data.resultInterest!)}",
+                  formula: data.profitInterestTotalFormula(dateRepo),
+                  value: NumberConversion.toCurrency(data.profitInterestTotal!),
                   valueColor: Colour.primary,
                 ),
                 DetilItem(
                   label: "Total Pajak (Y = (X x C))",
-                  formula:
-                      "${NumberConversion.toCurrency(data.resultInterest!)} x ${data.taxPercent} % = ",
-                  value: "${NumberConversion.toCurrency(data.resultTax!)}",
+                  formula: data.taxTotalFormula,
+                  value: NumberConversion.toCurrency(data.taxTotal!),
                   valueColor: Colour.primary,
                 ),
                 DetilItem(
                   label: "Hasil Deposito (Z = (X - Y))",
-                  formula:
-                      "${NumberConversion.toCurrency(data.resultInterest!)} - ${NumberConversion.toCurrency(data.resultTax!)} = ",
-                  value:
-                      "${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)}",
+                  formula: data.profitNettoFormula,
+                  value: NumberConversion.toCurrency(data.profitNetto!),
                   valueColor: Colour.primary,
                 ),
                 DetilItem(
                   label: "Nominal Total (Return = (A + Z))",
-                  formula:
-                      "${NumberConversion.toCurrency(data.nominalFund!)} + ${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)} = ",
-                  value: "${NumberConversion.toCurrency(data.resultNominal!)}",
+                  formula: data.profitNominalTotalFormula,
+                  // "${NumberConversion.toCurrency(data.nominalFund!)} + ${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)} = ",
+                  value: NumberConversion.toCurrency(data.profitNominalTotal!),
                   valueColor: Colour.primary,
                 ),
                 DetilItem(
@@ -297,12 +293,11 @@ class Result extends StatelessWidget {
                   value: "30 Hari",
                 ),
                 DetilItem(
-                  label: "Profit Bunga Deposito per Bulan ",
-                  desc: " (Q = (A x B x (100% - C) x (P / E)) ",
-                  formula:
-                      "${NumberConversion.toCurrency(data.nominalFund!)} x ${data.interest}% x (100% - ${data.taxPercent}%) x (30 hari / 365 hari) =",
-                  value:
-                      "${NumberConversion.toCurrency((data.nominalFund! * (data.interest / 100) * ((100 - data.taxPercent) / 100)) * (30 / 365))}",
+                  label: "Profit Bunga Deposito per Bulan (Q = (P / E) x Z) ",
+                  formula: data.profitIntersetPerMonthFormula(dateRepo),
+                  value: NumberConversion.toCurrency(
+                    data.profitInterestPerMonth!,
+                  ),
                   valueColor: Colour.primary,
                 ),
               ],
@@ -345,7 +340,7 @@ class Result extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         ResultText(
-          value: data.resultData.resultNominal ?? 0,
+          value: data.resultData.profitNominalTotal ?? 0,
           style: Textstyle.title.copyWith(
             color: Colour.primary,
           ),
@@ -357,7 +352,7 @@ class Result extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         ResultText(
-          value: data.resultData.resultInterest ?? 0,
+          value: data.resultData.profitInterestTotal ?? 0,
           style: Textstyle.title2.copyWith(
             color: Colour.primary,
           ),
@@ -369,7 +364,7 @@ class Result extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         ResultText(
-          value: data.resultData.resultTax ?? 0,
+          value: data.resultData.taxTotal ?? 0,
           style: Textstyle.title2.copyWith(
             color: Colour.primary,
           ),

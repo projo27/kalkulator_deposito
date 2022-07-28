@@ -256,48 +256,48 @@ class Result extends StatelessWidget {
                 //     color: Colour.background,
                 //   ),
                 // ),
-                DetilItem(
-                  label: "Profit Bunga (X = A x B x (D / E))",
-                  formula:
-                      "${NumberConversion.toCurrency(data.nominalFund!)} x ${data.interest} % x ( ${dateRepo.dateCount} hari x  365 hari) =",
-                  value: "${NumberConversion.toCurrency(data.resultInterest!)}",
-                  valueColor: Colour.primary,
-                ),
-                DetilItem(
-                  label: "Total Pajak (Y = (X x C))",
-                  formula:
-                      "${NumberConversion.toCurrency(data.resultInterest!)} x ${data.taxPercent} % = ",
-                  value: "${NumberConversion.toCurrency(data.resultTax!)}",
-                  valueColor: Colour.primary,
-                ),
-                DetilItem(
-                  label: "Hasil Deposito (Z = (X - Y))",
-                  formula:
-                      "${NumberConversion.toCurrency(data.resultInterest!)} - ${NumberConversion.toCurrency(data.resultTax!)} = ",
-                  value:
-                      "${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)}",
-                  valueColor: Colour.primary,
-                ),
-                DetilItem(
-                  label: "Nominal Total (Return = (A + Z))",
-                  formula:
-                      "${NumberConversion.toCurrency(data.nominalFund!)} + ${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)} = ",
-                  value: "${NumberConversion.toCurrency(data.resultNominal!)}",
-                  valueColor: Colour.primary,
-                ),
-                DetilItem(
-                  label: "Asumsi Jumlah Hari Sebulan (P)",
-                  value: "30 Hari",
-                ),
-                DetilItem(
-                  label: "Profit Bunga Deposito per Bulan ",
-                  desc: " (Q = (A x B x (100% - C) x (P / E)) ",
-                  formula:
-                      "${NumberConversion.toCurrency(data.nominalFund!)} x ${data.interest}% x (100% - ${data.taxPercent}%) x (30 hari / 365 hari) =",
-                  value:
-                      "${NumberConversion.toCurrency((data.nominalFund! * (data.interest / 100) * ((100 - data.taxPercent) / 100)) * (30 / 365))}",
-                  valueColor: Colour.primary,
-                ),
+                // DetilItem(
+                //   label: "Profit Bunga (X = A x B x (D / E))",
+                //   formula:
+                //       "${NumberConversion.toCurrency(data.nominalFund!)} x ${data.interest} % x ( ${dateRepo.dateCount} hari x  365 hari) =",
+                //   value: "${NumberConversion.toCurrency(data.resultInterest!)}",
+                //   valueColor: Colour.primary,
+                // ),
+                // DetilItem(
+                //   label: "Total Pajak (Y = (X x C))",
+                //   formula:
+                //       "${NumberConversion.toCurrency(data.resultInterest!)} x ${data.taxPercent} % = ",
+                //   value: "${NumberConversion.toCurrency(data.resultTax!)}",
+                //   valueColor: Colour.primary,
+                // ),
+                // DetilItem(
+                //   label: "Hasil Deposito (Z = (X - Y))",
+                //   formula:
+                //       "${NumberConversion.toCurrency(data.resultInterest!)} - ${NumberConversion.toCurrency(data.resultTax!)} = ",
+                //   value:
+                //       "${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)}",
+                //   valueColor: Colour.primary,
+                // ),
+                // DetilItem(
+                //   label: "Nominal Total (Return = (A + Z))",
+                //   formula:
+                //       "${NumberConversion.toCurrency(data.nominalFund!)} + ${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)} = ",
+                //   value: "${NumberConversion.toCurrency(data.resultNominal!)}",
+                //   valueColor: Colour.primary,
+                // ),
+                // DetilItem(
+                //   label: "Asumsi Jumlah Hari Sebulan (P)",
+                //   value: "30 Hari",
+                // ),
+                // DetilItem(
+                //   label: "Profit Bunga Deposito per Bulan ",
+                //   desc: " (Q = (A x B x (100% - C) x (P / E)) ",
+                //   formula:
+                //       "${NumberConversion.toCurrency(data.nominalFund!)} x ${data.interest}% x (100% - ${data.taxPercent}%) x (30 hari / 365 hari) =",
+                //   value:
+                //       "${NumberConversion.toCurrency((data.nominalFund! * (data.interest / 100) * ((100 - data.taxPercent) / 100)) * (30 / 365))}",
+                //   valueColor: Colour.primary,
+                // ),
               ],
             ),
           ),
