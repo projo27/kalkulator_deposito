@@ -284,7 +284,6 @@ class Result extends StatelessWidget {
                 DetilItem(
                   label: "Nominal Total (Return = (A + Z))",
                   formula: data.profitNominalTotalFormula,
-                  // "${NumberConversion.toCurrency(data.nominalFund!)} + ${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)} = ",
                   value: NumberConversion.toCurrency(data.profitNominalTotal!),
                   valueColor: Colour.primary,
                 ),
@@ -293,7 +292,8 @@ class Result extends StatelessWidget {
                   value: "30 Hari",
                 ),
                 DetilItem(
-                  label: "Profit Bunga Deposito per Bulan (Q = (P / E) x Z) ",
+                  label: "Profit Bunga Deposito per Bulan ",
+                  desc: "(Q = A x B% x (100% - C%) x (P / E)) ",
                   formula: data.profitIntersetPerMonthFormula(dateRepo),
                   value: NumberConversion.toCurrency(
                     data.profitInterestPerMonth!,

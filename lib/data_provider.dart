@@ -51,6 +51,9 @@ abstract class DepositoData {
   /// profit bunga dalam sebulan
   num? profitInterestPerMonth;
 
+  /// profit bunga dalam setahun
+  num? profitIntersetPerYear;
+
   /// profit bunga total
   num? profitInterestTotal;
 
@@ -80,7 +83,9 @@ abstract class DepositoData {
   }
 
   String profitIntersetPerMonthFormula(DateRepository dateData) {
-    return "(${dateData.monthDateCount} hari / ${dateData.annualDateCount} hari) x ${NumberConversion.toCurrency(profitNetto!)} =";
+    //(Q = A * B% * (100 - C) / 100 * (P / E))
+    return "${NumberConversion.toCurrency(nominalFund!)} x $interest% x (100% - $taxPercent%) x (${dateData.monthDateCount} / ${dateData.annualDateCount}) ";
+    //return "(${dateData.monthDateCount} hari / ${dateData.annualDateCount} hari) x ${NumberConversion.toCurrency(profitNetto!)} =";
   }
 }
 
@@ -337,7 +342,6 @@ class DataProvider extends ChangeNotifier {
     num profitNominalTotal = _resultData.nominalFund! + profitNetto;
     num profitInterestPerMonth =
         dateR.monthDateCount / dateR.annualDateCount * profitNetto;
-    // ${NumberConversion.toCurrency(nominalFund!)} x $interest % x (100% - $taxPercent %) x (${dateData.monthDateCount} hari / ${dateData.annualDateCount} hari)
 
     _resultData = _resultData.copywith(
       profitInterestTotal: profitInterestTotal,
@@ -348,5 +352,17 @@ class DataProvider extends ChangeNotifier {
     );
   }
 
-  void calculateResultNominal() {}
+  void calculateResultNominal() {
+    // DateRepository dateR =
+    //     dateType == Datetype.period ? _datePeriod : _dateRange;
+    // num profitInterestPerMonth =
+    //     dateR.monthDateCount / dateR.annualDateCount * profitNetto;
+    // num profitNetto = profitInterestTotal - taxTotal;
+
+    // num profitInterestTotal = _nominalData.nominalFund! *
+    //     (_nominalData.interest / 100) *
+    //     (dateR.dateCount / 365);
+    // num taxTotal = profitInterestTotal * _nominalData.taxPercent / 100;
+    // num profitNominalTotal = _nominalData.nominalFund! + profitNetto;
+  }
 }
