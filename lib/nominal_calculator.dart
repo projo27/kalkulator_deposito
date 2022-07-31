@@ -27,7 +27,8 @@ class _NominalCalculatorState extends State<NominalCalculator> {
     final nominalData = dataProvider.nominalData;
 
     _resultPerMonthCtrl = TextEditingController(
-      text: NumberConversion.toCurrency(nominalData.resultPerMonth, symbol: ''),
+      text: NumberConversion.toCurrency(nominalData.profitInterestPerMonth ?? 0,
+          symbol: ''),
     );
     _interestCtrl = TextEditingController(
       text: nominalData.interest.toString(),
@@ -71,10 +72,10 @@ class _NominalCalculatorState extends State<NominalCalculator> {
           onFocusChange: (isTrue) {
             if (isTrue) {
               _resultPerMonthCtrl.text =
-                  data.nominalData.resultPerMonth.toString();
+                  data.nominalData.profitInterestPerMonth.toString();
             } else {
               _resultPerMonthCtrl.text = NumberConversion.toCurrency(
-                  data.nominalData.resultPerMonth,
+                  data.nominalData.profitInterestPerMonth!,
                   symbol: '');
             }
           },
@@ -92,7 +93,7 @@ class _NominalCalculatorState extends State<NominalCalculator> {
               onClear: () {
                 _resultPerMonthCtrl.clear();
                 data.nominalData = data.nominalData.copywith(
-                  resultPerMonth: 0,
+                  profitInterestPerMonth: 0,
                 );
               },
             ),
@@ -101,7 +102,7 @@ class _NominalCalculatorState extends State<NominalCalculator> {
             ],
             onChanged: (val) {
               data.nominalData = data.nominalData.copywith(
-                resultPerMonth: num.parse(val),
+                profitInterestPerMonth: num.parse(val.isEmpty ? "0" : val),
               );
             },
           ),
@@ -138,7 +139,7 @@ class _NominalCalculatorState extends State<NominalCalculator> {
             ],
             onChanged: (val) {
               data.nominalData = data.nominalData.copywith(
-                interest: num.parse(val),
+                interest: num.parse(val.isEmpty ? "0" : val),
               );
             },
           ),
@@ -175,7 +176,7 @@ class _NominalCalculatorState extends State<NominalCalculator> {
             ],
             onChanged: (val) {
               data.nominalData = data.nominalData.copywith(
-                taxPercent: num.parse(val),
+                taxPercent: num.parse(val.isEmpty ? "0" : val),
               );
             },
           ),
@@ -212,7 +213,7 @@ class Result extends StatelessWidget {
   final TextStyle _textStyleBodySmall =
       Textstyle.bodySmall.copyWith(color: Colour.background, fontSize: 14);
 
-  showInfo(BuildContext context, ResultData data, DateRepository dateRepo) {
+  showInfo(BuildContext context, NominalData data, DateRepository dateRepo) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -230,8 +231,11 @@ class Result extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 DetilItem(
-                  label: "Pokok / Modal (A)",
-                  value: NumberConversion.toCurrency(data.nominalFund!),
+                  label: "Profit Bunga Deposito per Bulan (Q)",
+                  // formula: data.profitIntersetPerMonthFormula(dateRepo),
+                  value: NumberConversion.toCurrency(
+                    data.profitInterestPerMonth!,
+                  ),
                 ),
                 DetilItem(
                   label: "Suku Bunga (B)",
@@ -242,6 +246,10 @@ class Result extends StatelessWidget {
                   value: data.taxPercent.toString() + " %",
                 ),
                 DetilItem(
+                  label: "Asumsi Jumlah Hari Sebulan (P)",
+                  value: "30 Hari",
+                ),
+                DetilItem(
                   label: "Jumlah Hari (D)",
                   value: dateRepo.dateCount.toString() + " Hari",
                 ),
@@ -249,55 +257,37 @@ class Result extends StatelessWidget {
                   label: "Jumlah Hari Setahun (E)",
                   value: "365 Hari",
                 ),
-                // SizedBox(
-                //   height: 24,
-                //   child: Divider(
-                //     thickness: 3,
-                //     color: Colour.background,
-                //   ),
-                // ),
-                // DetilItem(
-                //   label: "Profit Bunga (X = A x B x (D / E))",
-                //   formula:
-                //       "${NumberConversion.toCurrency(data.nominalFund!)} x ${data.interest} % x ( ${dateRepo.dateCount} hari x  365 hari) =",
-                //   value: "${NumberConversion.toCurrency(data.resultInterest!)}",
-                //   valueColor: Colour.primary,
-                // ),
-                // DetilItem(
-                //   label: "Total Pajak (Y = (X x C))",
-                //   formula:
-                //       "${NumberConversion.toCurrency(data.resultInterest!)} x ${data.taxPercent} % = ",
-                //   value: "${NumberConversion.toCurrency(data.resultTax!)}",
-                //   valueColor: Colour.primary,
-                // ),
-                // DetilItem(
-                //   label: "Hasil Deposito (Z = (X - Y))",
-                //   formula:
-                //       "${NumberConversion.toCurrency(data.resultInterest!)} - ${NumberConversion.toCurrency(data.resultTax!)} = ",
-                //   value:
-                //       "${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)}",
-                //   valueColor: Colour.primary,
-                // ),
-                // DetilItem(
-                //   label: "Nominal Total (Return = (A + Z))",
-                //   formula:
-                //       "${NumberConversion.toCurrency(data.nominalFund!)} + ${NumberConversion.toCurrency(data.resultInterest! - data.resultTax!)} = ",
-                //   value: "${NumberConversion.toCurrency(data.resultNominal!)}",
-                //   valueColor: Colour.primary,
-                // ),
-                // DetilItem(
-                //   label: "Asumsi Jumlah Hari Sebulan (P)",
-                //   value: "30 Hari",
-                // ),
-                // DetilItem(
-                //   label: "Profit Bunga Deposito per Bulan ",
-                //   desc: " (Q = (A x B x (100% - C) x (P / E)) ",
-                //   formula:
-                //       "${NumberConversion.toCurrency(data.nominalFund!)} x ${data.interest}% x (100% - ${data.taxPercent}%) x (30 hari / 365 hari) =",
-                //   value:
-                //       "${NumberConversion.toCurrency((data.nominalFund! * (data.interest / 100) * ((100 - data.taxPercent) / 100)) * (30 / 365))}",
-                //   valueColor: Colour.primary,
-                // ),
+                DetilItem(
+                  label: "Pokok / Modal",
+                  desc: "(A = Q / (B% x (100% - C%) x (P / E)))",
+                  formula: data.nominalFundFormula(dateRepo),
+                  value: NumberConversion.toCurrency(data.nominalFund!),
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Profit Bunga (X = A x B x (D / E))",
+                  formula: data.profitInterestTotalFormula(dateRepo),
+                  value: NumberConversion.toCurrency(data.profitInterestTotal!),
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Total Pajak (Y = (X x C))",
+                  formula: data.taxTotalFormula,
+                  value: NumberConversion.toCurrency(data.taxTotal!),
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Hasil Deposito (Z = (X - Y))",
+                  formula: data.profitNettoFormula,
+                  value: NumberConversion.toCurrency(data.profitNetto!),
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Nominal Total (Return = (A + Z))",
+                  formula: data.profitNominalTotalFormula,
+                  value: NumberConversion.toCurrency(data.profitNominalTotal!),
+                  valueColor: Colour.primary,
+                ),
               ],
             ),
           ),
@@ -333,12 +323,12 @@ class Result extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          "Modal Deposito yg Dibutuhkan",
+          "Pokok / Modal Deposito Setahun",
           style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
         ),
         const SizedBox(height: 8),
         ResultText(
-          value: data.nominalData.resultNominal ?? 0,
+          value: data.nominalData.nominalFund ?? 0,
           style: Textstyle.title.copyWith(
             color: Colour.primary,
           ),
@@ -350,7 +340,7 @@ class Result extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         ResultText(
-          value: data.nominalData.resultInterest ?? 0,
+          value: data.nominalData.profitInterestTotal ?? 0,
           style: Textstyle.title2.copyWith(
             color: Colour.primary,
           ),
@@ -362,7 +352,7 @@ class Result extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         ResultText(
-          value: data.nominalData.resultTax ?? 0,
+          value: data.nominalData.taxTotal ?? 0,
           style: Textstyle.title2.copyWith(
             color: Colour.primary,
           ),
@@ -376,7 +366,7 @@ class Result extends StatelessWidget {
               onPressed: () {
                 showInfo(
                   context,
-                  data.resultData,
+                  data.nominalData,
                   data.dateType == Datetype.period
                       ? data.datePeriod
                       : data.dateRange,

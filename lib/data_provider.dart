@@ -84,8 +84,11 @@ abstract class DepositoData {
 
   String profitIntersetPerMonthFormula(DateRepository dateData) {
     //(Q = A * B% * (100 - C) / 100 * (P / E))
-    return "${NumberConversion.toCurrency(nominalFund!)} x $interest% x (100% - $taxPercent%) x (${dateData.monthDateCount} / ${dateData.annualDateCount}) ";
-    //return "(${dateData.monthDateCount} hari / ${dateData.annualDateCount} hari) x ${NumberConversion.toCurrency(profitNetto!)} =";
+    return "${NumberConversion.toCurrency(nominalFund!)} x $interest% x (100% - $taxPercent%) x (${dateData.monthDateCount} hari / ${dateData.annualDateCount}) hari =";
+  }
+
+  String nominalFundFormula(DateRepository dateData) {
+    return "${NumberConversion.toCurrency(profitInterestPerMonth!)} / ($interest% x (100% - $taxPercent%) x (${dateData.monthDateCount} hari / ${dateData.annualDateCount}) hari) =";
   }
 }
 
@@ -142,42 +145,55 @@ class ResultData extends DepositoData {
   }
 }
 
-class NominalData {
-  num resultPerMonth;
-  num interest;
-  Datetype dateType;
-  num taxPercent;
-  num? resultNominal;
-  num? resultInterest;
-  num? resultTax;
-
+class NominalData extends DepositoData {
   NominalData({
-    required this.resultPerMonth,
-    required this.interest,
-    required this.dateType,
-    required this.taxPercent,
-    this.resultNominal,
-    this.resultInterest,
-    this.resultTax,
-  });
+    num? nominalFund,
+    required num interest,
+    required num taxPercent,
+    required Datetype dateType,
+    required DateRepository dateData,
+    required num profitInterestPerMonth,
+    num? profitInterestTotal,
+    num? taxTotal,
+    num? profitNetto,
+    num? profitNominalTotal,
+  }) {
+    this.nominalFund = nominalFund;
+    this.interest = interest;
+    this.taxPercent = taxPercent;
+    this.dateType = dateType;
+    this.dateData = dateData;
+    this.profitInterestPerMonth = profitInterestPerMonth;
+    this.profitInterestTotal = profitInterestTotal;
+    this.taxTotal = taxTotal;
+    this.profitNetto = profitNetto;
+    this.profitNominalTotal = profitNominalTotal;
+  }
 
   NominalData copywith({
-    num? resultPerMonth,
+    num? nominalFund,
     num? interest,
-    Datetype? dateType,
     num? taxPercent,
-    num? resultNominal,
-    num? resultInterest,
-    num? resultTax,
+    Datetype? dateType,
+    DateRepository? dateData,
+    num? profitInterestPerMonth,
+    num? profitInterestTotal,
+    num? taxTotal,
+    num? profitNetto,
+    num? profitNominalTotal,
   }) {
     return NominalData(
-      resultPerMonth: resultPerMonth ?? this.resultPerMonth,
+      nominalFund: nominalFund ?? this.nominalFund,
       interest: interest ?? this.interest,
       dateType: dateType ?? this.dateType,
+      dateData: dateData ?? this.dateData,
       taxPercent: taxPercent ?? this.taxPercent,
-      resultNominal: resultNominal ?? this.resultNominal,
-      resultInterest: resultInterest ?? this.resultInterest,
-      resultTax: resultTax ?? this.resultTax,
+      profitInterestPerMonth:
+          profitInterestPerMonth ?? this.profitInterestPerMonth!,
+      profitInterestTotal: profitInterestTotal ?? this.profitInterestTotal,
+      taxTotal: taxTotal ?? this.taxTotal,
+      profitNetto: profitNetto ?? this.profitNetto,
+      profitNominalTotal: profitNominalTotal ?? this.profitNominalTotal,
     );
   }
 }
@@ -271,11 +287,11 @@ class DataProvider extends ChangeNotifier {
   );
 
   NominalData _nominalData = NominalData(
-    resultPerMonth: 3000000,
+    profitInterestPerMonth: 3000000,
     interest: 5.50,
     dateType: Datetype.dateRange,
     taxPercent: 20,
-    resultNominal: null,
+    dateData: DatePeriod(period: 3, periodType: PeriodType.month),
   );
 
   ResultData get resultData => _resultData;
@@ -336,12 +352,15 @@ class DataProvider extends ChangeNotifier {
         dateType == Datetype.period ? _datePeriod : _dateRange;
     num profitInterestTotal = _resultData.nominalFund! *
         (_resultData.interest / 100) *
-        (dateR.dateCount / 365);
+        (dateR.dateCount / dateR.annualDateCount);
     num taxTotal = profitInterestTotal * _resultData.taxPercent / 100;
     num profitNetto = profitInterestTotal - taxTotal;
     num profitNominalTotal = _resultData.nominalFund! + profitNetto;
-    num profitInterestPerMonth =
-        dateR.monthDateCount / dateR.annualDateCount * profitNetto;
+    num profitInterestPerMonth = _resultData.nominalFund! *
+        (_resultData.interest / 100) *
+        ((100 - _resultData.taxPercent) / 100) *
+        dateR.monthDateCount /
+        dateR.annualDateCount;
 
     _resultData = _resultData.copywith(
       profitInterestTotal: profitInterestTotal,
@@ -353,16 +372,25 @@ class DataProvider extends ChangeNotifier {
   }
 
   void calculateResultNominal() {
-    // DateRepository dateR =
-    //     dateType == Datetype.period ? _datePeriod : _dateRange;
-    // num profitInterestPerMonth =
-    //     dateR.monthDateCount / dateR.annualDateCount * profitNetto;
-    // num profitNetto = profitInterestTotal - taxTotal;
+    DateRepository dateR =
+        dateType == Datetype.period ? _datePeriod : _dateRange;
+    num nominalFund = (_nominalData.profitInterestPerMonth ?? 0) /
+        ((_nominalData.interest / 100) *
+            ((100 - _nominalData.taxPercent) / 100) *
+            (dateR.monthDateCount / dateR.annualDateCount));
+    num profitInterestTotal = (nominalFund) *
+        ((_nominalData.interest / 100) *
+            (dateR.dateCount / dateR.annualDateCount));
+    num taxTotal = profitInterestTotal * _nominalData.taxPercent / 100;
+    num profitNetto = profitInterestTotal - taxTotal;
+    num profitNominalTotal = nominalFund + profitNetto;
 
-    // num profitInterestTotal = _nominalData.nominalFund! *
-    //     (_nominalData.interest / 100) *
-    //     (dateR.dateCount / 365);
-    // num taxTotal = profitInterestTotal * _nominalData.taxPercent / 100;
-    // num profitNominalTotal = _nominalData.nominalFund! + profitNetto;
+    _nominalData = _nominalData.copywith(
+      nominalFund: nominalFund,
+      profitInterestTotal: profitInterestTotal,
+      profitNominalTotal: profitNominalTotal,
+      profitNetto: profitNetto,
+      taxTotal: taxTotal,
+    );
   }
 }

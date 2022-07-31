@@ -104,7 +104,7 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             ],
             onChanged: (val) {
               data.resultData = data.resultData.copywith(
-                nominalFund: num.parse(val),
+                nominalFund: num.parse(val.isEmpty ? "0" : val),
               );
             },
           ),
@@ -141,7 +141,7 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             ],
             onChanged: (val) {
               data.resultData = data.resultData.copywith(
-                interest: num.tryParse(val),
+                interest: num.parse(val.isEmpty ? "0" : val),
               );
             },
           ),
@@ -178,7 +178,7 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             ],
             onChanged: (val) {
               data.resultData = data.resultData.copywith(
-                taxPercent: num.tryParse(val),
+                taxPercent: num.parse(val.isEmpty ? "0" : val),
               );
             },
           ),
