@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kalkulator_deposito/const.dart';
@@ -5,7 +8,10 @@ import 'package:kalkulator_deposito/data_provider.dart';
 import 'package:kalkulator_deposito/main.dart';
 import 'package:kalkulator_deposito/util/currency_text_input_formatter.dart';
 import 'package:kalkulator_deposito/util/number_conversion.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ResultCalculator extends StatefulWidget {
   const ResultCalculator({
@@ -219,6 +225,35 @@ class Result extends StatelessWidget {
   final TextStyle _textStyleBodySmall =
       Textstyle.bodySmall.copyWith(color: Colour.background, fontSize: 14);
 
+  ScreenshotController screenshotControllerDetail = ScreenshotController(),
+      screenshotControllerResult = ScreenshotController();
+
+  screenshotAndShare(
+      BuildContext context, ScreenshotController screenshotController) async {
+    Uint8List? image = await screenshotController.capture(
+        delay: const Duration(milliseconds: 10));
+
+    if (image != null) {
+      final directory = await getTemporaryDirectory();
+      final imagePath = await File('${directory.path}/image.png').create();
+      await imagePath.writeAsBytes(image);
+
+      /// Share Plugin
+      try {
+        await Share.shareFiles([imagePath.path]);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+          ),
+        );
+        //print(e);
+      } finally {
+        await imagePath.delete();
+      }
+    }
+  }
+
   showInfo(BuildContext context, ResultData data, DateRepository dateRepo) {
     showDialog(
       context: context,
@@ -229,80 +264,9 @@ class Result extends StatelessWidget {
           'Rincian Hasil Deposito',
           style: Textstyle.subtitle.copyWith(color: Colour.background),
         ),
-        content: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                DetilItem(
-                  label: "Pokok / Modal (A)",
-                  value: NumberConversion.toCurrency(data.nominalFund!),
-                ),
-                DetilItem(
-                  label: "Suku Bunga (B)",
-                  value: data.interest.toString() + " %",
-                ),
-                DetilItem(
-                  label: "Pajak (C)",
-                  value: data.taxPercent.toString() + " %",
-                ),
-                DetilItem(
-                  label: "Jumlah Hari (D)",
-                  value: dateRepo.dateCount.toString() + " Hari",
-                ),
-                DetilItem(
-                  label: "Jumlah Hari Setahun (E)",
-                  value: "365 Hari",
-                ),
-                // SizedBox(
-                //   height: 24,
-                //   child: Divider(
-                //     thickness: 3,
-                //     color: Colour.background,
-                //   ),
-                // ),
-                DetilItem(
-                  label: "Profit Bunga (X = A x B x (D / E))",
-                  formula: data.profitInterestTotalFormula(dateRepo),
-                  value: NumberConversion.toCurrency(data.profitInterestTotal!),
-                  valueColor: Colour.primary,
-                ),
-                DetilItem(
-                  label: "Total Pajak (Y = (X x C))",
-                  formula: data.taxTotalFormula,
-                  value: NumberConversion.toCurrency(data.taxTotal!),
-                  valueColor: Colour.primary,
-                ),
-                DetilItem(
-                  label: "Hasil Deposito (Z = (X - Y))",
-                  formula: data.profitNettoFormula,
-                  value: NumberConversion.toCurrency(data.profitNetto!),
-                  valueColor: Colour.primary,
-                ),
-                DetilItem(
-                  label: "Nominal Total (Return = (A + Z))",
-                  formula: data.profitNominalTotalFormula,
-                  value: NumberConversion.toCurrency(data.profitNominalTotal!),
-                  valueColor: Colour.primary,
-                ),
-                DetilItem(
-                  label: "Asumsi Jumlah Hari Sebulan (P)",
-                  value: "30 Hari",
-                ),
-                DetilItem(
-                  label: "Profit Bunga Deposito per Bulan ",
-                  desc: "(Q = A x B% x (100% - C%) x (P / E)) ",
-                  formula: data.profitIntersetPerMonthFormula(dateRepo),
-                  value: NumberConversion.toCurrency(
-                    data.profitInterestPerMonth!,
-                  ),
-                  valueColor: Colour.primary,
-                ),
-              ],
-            ),
-          ),
+        content: Screenshot(
+          controller: screenshotControllerDetail,
+          child: DetailWindow(data: data, dateRepo: dateRepo),
         ),
         actions: [
           TextButton.icon(
@@ -312,7 +276,8 @@ class Result extends StatelessWidget {
               size: 16,
             ),
             label: Text('SHARE', style: _textStyleBody),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async =>
+                screenshotAndShare(context, screenshotControllerDetail),
           ),
           TextButton.icon(
             icon: Icon(
@@ -334,39 +299,47 @@ class Result extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          "Nominal Saat Jatuh Tempo",
-          style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
-        ),
-        const SizedBox(height: 8),
-        ResultText(
-          value: data.resultData.profitNominalTotal ?? 0,
-          style: Textstyle.title.copyWith(
-            color: Colour.primary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          "Total Akumulasi Bunga",
-          style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
-        ),
-        const SizedBox(height: 8),
-        ResultText(
-          value: data.resultData.profitInterestTotal ?? 0,
-          style: Textstyle.title2.copyWith(
-            color: Colour.primary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          "Total Pajak",
-          style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
-        ),
-        const SizedBox(height: 8),
-        ResultText(
-          value: data.resultData.taxTotal ?? 0,
-          style: Textstyle.title2.copyWith(
-            color: Colour.primary,
+        Screenshot(
+          controller: screenshotControllerResult,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                "Nominal Saat Jatuh Tempo",
+                style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
+              ),
+              const SizedBox(height: 8),
+              ResultText(
+                value: data.resultData.profitNominalTotal ?? 0,
+                style: Textstyle.title.copyWith(
+                  color: Colour.primary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Total Akumulasi Bunga",
+                style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
+              ),
+              const SizedBox(height: 8),
+              ResultText(
+                value: data.resultData.profitInterestTotal ?? 0,
+                style: Textstyle.title2.copyWith(
+                  color: Colour.primary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Total Pajak",
+                style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
+              ),
+              const SizedBox(height: 8),
+              ResultText(
+                value: data.resultData.taxTotal ?? 0,
+                style: Textstyle.title2.copyWith(
+                  color: Colour.primary,
+                ),
+              ),
+            ],
           ),
         ),
         const Divider(),
@@ -391,7 +364,9 @@ class Result extends StatelessWidget {
               color: Colour.backgroundContainer,
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                screenshotAndShare(context, screenshotControllerResult);
+              },
               icon: const Icon(
                 Icons.share,
                 size: 24,
@@ -401,6 +376,96 @@ class Result extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class DetailWindow extends StatelessWidget {
+  const DetailWindow({
+    Key? key,
+    required this.data,
+    required this.dateRepo,
+  }) : super(key: key);
+
+  final DepositoData data;
+  final DateRepository dateRepo;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DetilItem(
+              label: "Pokok / Modal (A)",
+              value: NumberConversion.toCurrency(data.nominalFund!),
+            ),
+            DetilItem(
+              label: "Suku Bunga (B)",
+              value: data.interest.toString() + " %",
+            ),
+            DetilItem(
+              label: "Pajak (C)",
+              value: data.taxPercent.toString() + " %",
+            ),
+            DetilItem(
+              label: "Jumlah Hari (D)",
+              value: dateRepo.dateCount.toString() + " Hari",
+            ),
+            DetilItem(
+              label: "Jumlah Hari Setahun (E)",
+              value: "365 Hari",
+            ),
+            // SizedBox(
+            //   height: 24,
+            //   child: Divider(
+            //     thickness: 3,
+            //     color: Colour.background,
+            //   ),
+            // ),
+            DetilItem(
+              label: "Profit Bunga (X = A x B x (D / E))",
+              formula: data.profitInterestTotalFormula(dateRepo),
+              value: NumberConversion.toCurrency(data.profitInterestTotal!),
+              valueColor: Colour.primary,
+            ),
+            DetilItem(
+              label: "Total Pajak (Y = (X x C))",
+              formula: data.taxTotalFormula,
+              value: NumberConversion.toCurrency(data.taxTotal!),
+              valueColor: Colour.primary,
+            ),
+            DetilItem(
+              label: "Hasil Deposito (Z = (X - Y))",
+              formula: data.profitNettoFormula,
+              value: NumberConversion.toCurrency(data.profitNetto!),
+              valueColor: Colour.primary,
+            ),
+            DetilItem(
+              label: "Nominal Total (Return = (A + Z))",
+              formula: data.profitNominalTotalFormula,
+              value: NumberConversion.toCurrency(data.profitNominalTotal!),
+              valueColor: Colour.primary,
+            ),
+            DetilItem(
+              label: "Asumsi Jumlah Hari Sebulan (P)",
+              value: "30 Hari",
+            ),
+            DetilItem(
+              label: "Profit Bunga Deposito per Bulan ",
+              desc: "(Q = A x B% x (100% - C%) x (P / E)) ",
+              formula: data.profitIntersetPerMonthFormula(dateRepo),
+              value: NumberConversion.toCurrency(
+                data.profitInterestPerMonth!,
+              ),
+              valueColor: Colour.primary,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
