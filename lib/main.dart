@@ -79,150 +79,147 @@ class _HomePageState extends State<HomePage> {
     DataProvider data = context.watch<DataProvider>();
     return Scaffold(
       backgroundColor: Colour.background,
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        child: Stack(
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height - 60,
-              child: Center(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
+      body: SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          child: Stack(
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height - 60,
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
                         horizontal:
-                            (0.2 * MediaQuery.of(context).size.width / 2),
-                        vertical: 48),
-                    child: content,
+                            (0.15 * MediaQuery.of(context).size.width / 2),
+                        vertical: 48,
+                      ),
+                      child: content,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colour.background.withOpacity(0),
-                      Colour.backgroundContainer
-                    ],
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colour.background.withOpacity(0),
+                        Colour.backgroundContainer
+                      ],
+                    ),
                   ),
-                ),
-                // color: LinearGradient(colors: [Colour.primary, Colour.secondary]),
-                height: 120,
-                child: Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colour.text,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(12),
+                  // color: LinearGradient(colors: [Colour.primary, Colour.secondary]),
+                  height: 120,
+                  child: Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colour.text,
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(12),
+                            ),
                           ),
-                        ),
-                        margin: const EdgeInsets.all(20),
-                        width: 0.8 * MediaQuery.of(context).size.width,
-                        height: 72,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton(
-                              onPressed: _page == ThePage.result
-                                  ? null
-                                  : () {
-                                      setPage(ThePage.result);
-                                    },
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
+                          margin: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          width: 0.85 * MediaQuery.of(context).size.width,
+                          height: 72,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                onPressed: _page == ThePage.result
+                                    ? null
+                                    : () {
+                                        setPage(ThePage.result);
+                                      },
                                 child: Icon(
                                   Icons.money,
                                   color: Colour.text,
                                 ),
-                              ),
-                              style: ElevatedButton.styleFrom(
+                                style: ElevatedButton.styleFrom(
                                   primary: Colour.backgroundContainer,
                                   onSurface: Colour.background,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   padding:
-                                      const EdgeInsets.symmetric(vertical: 12)),
-                              // color: Colour.background,
-                            ),
-                            const SizedBox(width: 64),
-                            ElevatedButton(
-                              onPressed: _page == ThePage.nominal
-                                  ? null
-                                  : () {
-                                      setPage(ThePage.nominal);
-                                    },
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                                // color: Colour.background,
+                              ),
+                              const SizedBox(width: 64),
+                              ElevatedButton(
+                                onPressed: _page == ThePage.nominal
+                                    ? null
+                                    : () {
+                                        setPage(ThePage.nominal);
+                                      },
                                 child: Icon(
                                   Icons.attach_money,
                                   color: Colour.text,
                                 ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                primary: Colour.backgroundContainer,
-                                onSurface: Colour.background,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                style: ElevatedButton.styleFrom(
+                                  primary: Colour.backgroundContainer,
+                                  onSurface: Colour.background,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
                                 ),
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
+                                // color: Colour.primary,
                               ),
-                              // color: Colour.primary,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: SizedBox(
-                        height: 60,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            data.calculateData();
-                          },
-                          icon: Icon(
-                            Icons.calculate,
-                            color: Colour.backgroundContainer,
-                          ),
-                          label: Text(
-                            "HITUNG",
-                            style: Textstyle.bodyBold
-                                .copyWith(color: Colour.backgroundContainer),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            primary: Colour.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.all(12),
+                            ],
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: SizedBox(
+                          height: 60,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              data.calculateData();
+                            },
+                            icon: Icon(
+                              Icons.calculate,
+                              color: Colour.backgroundContainer,
+                            ),
+                            label: Text(
+                              "HITUNG",
+                              style: Textstyle.bodyBold
+                                  .copyWith(color: Colour.backgroundContainer),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              primary: Colour.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.all(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Positioned(
-              right: 18,
-              top: 18,
-              child: Icon(
-                Icons.feedback,
-                color: Colour.text,
+              Positioned(
+                right: 18,
+                top: 18,
+                child: Icon(
+                  Icons.feedback,
+                  color: Colour.text,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -420,35 +417,38 @@ class LoaderShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FadeShimmer(
-          height: 32,
-          width: MediaQuery.of(context).size.width,
-          radius: 4,
-          highlightColor: Colour.text,
-          baseColor: Colors.white24,
-          millisecondsDelay: 0,
-        ),
-        const SizedBox(height: 12),
-        FadeShimmer(
-          height: 32,
-          width: MediaQuery.of(context).size.width,
-          radius: 4,
-          highlightColor: Colour.text,
-          baseColor: Colors.white24,
-          millisecondsDelay: 50,
-        ),
-        const SizedBox(height: 12),
-        FadeShimmer(
-          height: 32,
-          width: MediaQuery.of(context).size.width,
-          radius: 4,
-          highlightColor: Colour.text,
-          baseColor: Colors.white24,
-          millisecondsDelay: 100,
-        ),
-      ],
+    return Container(
+      margin: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          FadeShimmer(
+            height: 32,
+            width: MediaQuery.of(context).size.width,
+            radius: 4,
+            highlightColor: Colour.text,
+            baseColor: Colors.white24,
+            millisecondsDelay: 0,
+          ),
+          const SizedBox(height: 12),
+          FadeShimmer(
+            height: 32,
+            width: MediaQuery.of(context).size.width,
+            radius: 4,
+            highlightColor: Colour.text,
+            baseColor: Colors.white24,
+            millisecondsDelay: 50,
+          ),
+          const SizedBox(height: 12),
+          FadeShimmer(
+            height: 32,
+            width: MediaQuery.of(context).size.width,
+            radius: 4,
+            highlightColor: Colour.text,
+            baseColor: Colors.white24,
+            millisecondsDelay: 100,
+          ),
+        ],
+      ),
     );
   }
 }

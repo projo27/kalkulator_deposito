@@ -110,7 +110,7 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             ],
             onChanged: (val) {
               data.resultData = data.resultData.copywith(
-                nominalFund: num.parse(val.isEmpty ? "0" : val),
+                nominalFund: num.tryParse(val.isEmpty ? "0" : val),
               );
             },
           ),
@@ -131,7 +131,7 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             style: Textstyle.bodyBold.copyWith(color: Colour.primary),
             cursorColor: Colour.primary,
             decoration: inputDecor(
-              'Suku Bunga',
+              'Suku Bunga Deposito',
               '5,5 % ',
               prefix: Text("%", style: Textstyle.bodyBold),
               isClearable: true,
@@ -147,7 +147,7 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             ],
             onChanged: (val) {
               data.resultData = data.resultData.copywith(
-                interest: num.parse(val.isEmpty ? "0" : val),
+                interest: num.tryParse(val.isEmpty ? "0" : val),
               );
             },
           ),
@@ -168,7 +168,7 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             style: Textstyle.bodyBold.copyWith(color: Colour.primary),
             cursorColor: Colour.primary,
             decoration: inputDecor(
-              'Pajak',
+              'Pajak Deposito',
               '20 % ',
               prefix: Text("%", style: Textstyle.bodyBold),
               isClearable: true,
@@ -184,7 +184,7 @@ class _ResultCalculatorState extends State<ResultCalculator> {
             ],
             onChanged: (val) {
               data.resultData = data.resultData.copywith(
-                taxPercent: num.parse(val.isEmpty ? "0" : val),
+                taxPercent: num.tryParse(val.isEmpty ? "0" : val),
               );
             },
           ),
@@ -204,12 +204,9 @@ class _ResultCalculatorState extends State<ResultCalculator> {
         const SizedBox(height: 24),
         Card(
           elevation: 4,
+          margin: const EdgeInsets.all(0),
           color: Colour.text,
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            padding: const EdgeInsets.all(12),
-            child: data.isLoading ? const LoaderShimmer() : Result(),
-          ),
+          child: data.isLoading ? const LoaderShimmer() : Result(),
         ),
         const SizedBox(height: 40)
       ],
@@ -222,51 +219,26 @@ class Result extends StatelessWidget {
   final TextStyle _textStyleBody = Textstyle.bodyBold.copyWith(
     color: Colour.background,
   );
-  final TextStyle _textStyleBodySmall =
-      Textstyle.bodySmall.copyWith(color: Colour.background, fontSize: 14);
 
   ScreenshotController screenshotControllerDetail = ScreenshotController(),
       screenshotControllerResult = ScreenshotController();
-
-  screenshotAndShare(
-      BuildContext context, ScreenshotController screenshotController) async {
-    Uint8List? image = await screenshotController.capture(
-        delay: const Duration(milliseconds: 10));
-
-    if (image != null) {
-      final directory = await getTemporaryDirectory();
-      final imagePath = await File('${directory.path}/image.png').create();
-      await imagePath.writeAsBytes(image);
-
-      /// Share Plugin
-      try {
-        await Share.shareFiles([imagePath.path]);
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-          ),
-        );
-        //print(e);
-      } finally {
-        await imagePath.delete();
-      }
-    }
-  }
 
   showInfo(BuildContext context, ResultData data, DateRepository dateRepo) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        actionsPadding: const EdgeInsets.all(8),
+        contentPadding: const EdgeInsets.all(4),
+        titlePadding: const EdgeInsets.all(20),
+        // actionsPadding: const EdgeInsets.all(8),
         backgroundColor: Colors.grey[300],
         title: Text(
           'Rincian Hasil Deposito',
           style: Textstyle.subtitle.copyWith(color: Colour.background),
         ),
-        content: Screenshot(
-          controller: screenshotControllerDetail,
-          child: DetailWindow(data: data, dateRepo: dateRepo),
+        content: DetailWindow(
+          data: data,
+          dateRepo: dateRepo,
+          screenshotController: screenshotControllerDetail,
         ),
         actions: [
           TextButton.icon(
@@ -301,79 +273,88 @@ class Result extends StatelessWidget {
       children: [
         Screenshot(
           controller: screenshotControllerResult,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                "Nominal Saat Jatuh Tempo",
-                style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
-              ),
-              const SizedBox(height: 8),
-              ResultText(
-                value: data.resultData.profitNominalTotal ?? 0,
-                style: Textstyle.title.copyWith(
-                  color: Colour.primary,
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(top: 12),
+            color: Colour.text,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  "Nominal Saat Jatuh Tempo",
+                  style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                "Total Akumulasi Bunga",
-                style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
-              ),
-              const SizedBox(height: 8),
-              ResultText(
-                value: data.resultData.profitInterestTotal ?? 0,
-                style: Textstyle.title2.copyWith(
-                  color: Colour.primary,
+                const SizedBox(height: 8),
+                ResultText(
+                  value: data.resultData.profitNominalTotal ?? 0,
+                  style: Textstyle.title.copyWith(
+                    color: Colour.primary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                "Total Pajak",
-                style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
-              ),
-              const SizedBox(height: 8),
-              ResultText(
-                value: data.resultData.taxTotal ?? 0,
-                style: Textstyle.title2.copyWith(
-                  color: Colour.primary,
+                const SizedBox(height: 16),
+                Text(
+                  "Total Akumulasi Bunga",
+                  style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                ResultText(
+                  value: data.resultData.profitInterestTotal ?? 0,
+                  style: Textstyle.title2.copyWith(
+                    color: Colour.primary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Total Pajak",
+                  style: Textstyle.subtitle.copyWith(color: Colour.textAccent),
+                ),
+                const SizedBox(height: 8),
+                ResultText(
+                  value: data.resultData.taxTotal ?? 0,
+                  style: Textstyle.title2.copyWith(
+                    color: Colour.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         const Divider(),
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () {
-                showInfo(
-                  context,
-                  data.resultData,
-                  data.dateType == Datetype.period
-                      ? data.datePeriod
-                      : data.dateRange,
-                );
-              },
-              icon: const Icon(
-                Icons.info_outline,
-                size: 24,
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: () {
+                  showInfo(
+                    context,
+                    data.resultData,
+                    data.dateType == Datetype.period
+                        ? data.datePeriod
+                        : data.dateRange,
+                  );
+                },
+                icon: const Icon(
+                  Icons.info_outline,
+                  size: 24,
+                ),
+                color: Colour.backgroundContainer,
               ),
-              color: Colour.backgroundContainer,
-            ),
-            IconButton(
-              onPressed: () {
-                screenshotAndShare(context, screenshotControllerResult);
-              },
-              icon: const Icon(
-                Icons.share,
-                size: 24,
+              IconButton(
+                onPressed: () {
+                  screenshotAndShare(context, screenshotControllerResult);
+                },
+                icon: const Icon(
+                  Icons.share,
+                  size: 24,
+                ),
+                color: Colour.backgroundContainer,
               ),
-              color: Colour.backgroundContainer,
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -385,87 +366,122 @@ class DetailWindow extends StatelessWidget {
     Key? key,
     required this.data,
     required this.dateRepo,
+    required this.screenshotController,
   }) : super(key: key);
 
   final DepositoData data;
   final DateRepository dateRepo;
+  final ScreenshotController screenshotController;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
       child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            DetilItem(
-              label: "Pokok / Modal (A)",
-              value: NumberConversion.toCurrency(data.nominalFund!),
+        child: Screenshot(
+          controller: screenshotController,
+          child: Container(
+            color: Colors.grey[300],
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                DetilItem(
+                  label: "Pokok / Modal (A)",
+                  value: NumberConversion.toCurrency(data.nominalFund!),
+                ),
+                DetilItem(
+                  label: "Suku Bunga (B)",
+                  value: data.interest.toString() + " %",
+                ),
+                DetilItem(
+                  label: "Pajak (C)",
+                  value: data.taxPercent.toString() + " %",
+                ),
+                DetilItem(
+                  label: "Jumlah Hari (D)",
+                  value: dateRepo.dateCount.toString() + " Hari",
+                ),
+                DetilItem(
+                  label: "Jumlah Hari Setahun (E)",
+                  value: "365 Hari",
+                ),
+                // SizedBox(
+                //   height: 24,
+                //   child: Divider(
+                //     thickness: 3,
+                //     color: Colour.background,
+                //   ),
+                // ),
+                DetilItem(
+                  label: "Profit Bunga (X = A x B x (D / E))",
+                  formula: data.profitInterestTotalFormula(dateRepo),
+                  value: NumberConversion.toCurrency(data.profitInterestTotal!),
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Total Pajak (Y = (X x C))",
+                  formula: data.taxTotalFormula,
+                  value: NumberConversion.toCurrency(data.taxTotal!),
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Hasil Deposito (Z = (X - Y))",
+                  formula: data.profitNettoFormula,
+                  value: NumberConversion.toCurrency(data.profitNetto!),
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Nominal Total (Return = (A + Z))",
+                  formula: data.profitNominalTotalFormula,
+                  value: NumberConversion.toCurrency(data.profitNominalTotal!),
+                  valueColor: Colour.primary,
+                ),
+                DetilItem(
+                  label: "Asumsi Jumlah Hari Sebulan (P)",
+                  value: "30 Hari",
+                ),
+                DetilItem(
+                  label: "Profit Bunga Deposito per Bulan ",
+                  desc: "(Q = A x B% x (100% - C%) x (P / E)) ",
+                  formula: data.profitIntersetPerMonthFormula(dateRepo),
+                  value: NumberConversion.toCurrency(
+                    data.profitInterestPerMonth!,
+                  ),
+                  valueColor: Colour.primary,
+                ),
+              ],
             ),
-            DetilItem(
-              label: "Suku Bunga (B)",
-              value: data.interest.toString() + " %",
-            ),
-            DetilItem(
-              label: "Pajak (C)",
-              value: data.taxPercent.toString() + " %",
-            ),
-            DetilItem(
-              label: "Jumlah Hari (D)",
-              value: dateRepo.dateCount.toString() + " Hari",
-            ),
-            DetilItem(
-              label: "Jumlah Hari Setahun (E)",
-              value: "365 Hari",
-            ),
-            // SizedBox(
-            //   height: 24,
-            //   child: Divider(
-            //     thickness: 3,
-            //     color: Colour.background,
-            //   ),
-            // ),
-            DetilItem(
-              label: "Profit Bunga (X = A x B x (D / E))",
-              formula: data.profitInterestTotalFormula(dateRepo),
-              value: NumberConversion.toCurrency(data.profitInterestTotal!),
-              valueColor: Colour.primary,
-            ),
-            DetilItem(
-              label: "Total Pajak (Y = (X x C))",
-              formula: data.taxTotalFormula,
-              value: NumberConversion.toCurrency(data.taxTotal!),
-              valueColor: Colour.primary,
-            ),
-            DetilItem(
-              label: "Hasil Deposito (Z = (X - Y))",
-              formula: data.profitNettoFormula,
-              value: NumberConversion.toCurrency(data.profitNetto!),
-              valueColor: Colour.primary,
-            ),
-            DetilItem(
-              label: "Nominal Total (Return = (A + Z))",
-              formula: data.profitNominalTotalFormula,
-              value: NumberConversion.toCurrency(data.profitNominalTotal!),
-              valueColor: Colour.primary,
-            ),
-            DetilItem(
-              label: "Asumsi Jumlah Hari Sebulan (P)",
-              value: "30 Hari",
-            ),
-            DetilItem(
-              label: "Profit Bunga Deposito per Bulan ",
-              desc: "(Q = A x B% x (100% - C%) x (P / E)) ",
-              formula: data.profitIntersetPerMonthFormula(dateRepo),
-              value: NumberConversion.toCurrency(
-                data.profitInterestPerMonth!,
-              ),
-              valueColor: Colour.primary,
-            ),
-          ],
+          ),
         ),
       ),
     );
+  }
+}
+
+screenshotAndShare(
+    BuildContext context, ScreenshotController screenshotController) async {
+  Uint8List? image = await screenshotController.capture(
+      delay: const Duration(milliseconds: 10));
+
+  if (image != null) {
+    final directory = await getTemporaryDirectory();
+    final imagePath = await File('${directory.path}/image.png').create();
+    await imagePath.writeAsBytes(image);
+
+    /// Share Plugin
+    try {
+      await Share.shareFiles([imagePath.path]);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+        ),
+      );
+      //print(e);
+    } finally {
+      await imagePath.delete();
+    }
   }
 }
