@@ -138,10 +138,16 @@ class _HomePageState extends State<HomePage> {
                                     : () {
                                         setPage(ThePage.result);
                                       },
-                                child: Icon(
-                                  Icons.money,
-                                  color: Colour.text,
+                                child: Image.asset(
+                                  'assets/images/rp_icon_result.png',
+                                  color: _page == ThePage.result
+                                      ? Colors.grey[400]
+                                      : Colors.grey[50],
                                 ),
+                                // Icon(
+                                //   Icons.money,
+                                //   color: Colour.text,
+                                // ),
                                 style: ElevatedButton.styleFrom(
                                   primary: Colour.backgroundContainer,
                                   onSurface: Colour.background,
@@ -160,9 +166,11 @@ class _HomePageState extends State<HomePage> {
                                     : () {
                                         setPage(ThePage.nominal);
                                       },
-                                child: Icon(
-                                  Icons.attach_money,
-                                  color: Colour.text,
+                                child: Image.asset(
+                                  'assets/images/rp_icon_nominal.png',
+                                  color: _page == ThePage.nominal
+                                      ? Colors.grey[400]
+                                      : Colors.grey[50],
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   primary: Colour.backgroundContainer,
