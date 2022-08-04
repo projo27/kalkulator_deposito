@@ -52,7 +52,7 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.gisari.kalkulator_deposito"
         minSdkVersion 19 //flutter.minSdkVersion
-        targetSdkVersion 28 //flutter.targetSdkVersion
+        targetSdkVersion 30 //flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -65,7 +65,7 @@ android {
            storePassword keystoreProperties['storePassword']
        }
    }
-   
+
    buildTypes {
        release {
            signingConfig signingConfigs.release
